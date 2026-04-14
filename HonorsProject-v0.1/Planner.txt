@@ -1,0 +1,128 @@
+Simple UML
+
+[Main]
+      |
+      | creates
+      v
+    [MoodEntry]
+
+    [Main] ----> [FileManager]
+    [Main] ----> [TrendAnalyzer]
+
+    [TrendAnalyzer] ----> (vector of) MoodEntry
+    [FileManager] ----> (reads/writes) MoodEntry
+
+-----------------------------------------------------
+                *** Data Flow ***
+
+User Input
+   ↓
+MoodEntry created
+   ↓
+Saved via FileManager
+   ↓
+Loaded into vector<MoodEntry>
+   ↓
+Passed to TrendAnalyzer
+   ↓
+Results (averages, triggers)
+-----------------------------------------------------
+              *** Algorithm Section ***
+
+-Average Stress
+* Loop through all entries
+* Sum stress values
+* Divide by total entries
+
+-Average Anxiety
+* Loop through all entries
+* Sum stress values
+* Divide by total entries
+
+-Most Frequent Trigger
+* Loop through all entries
+* Loop through triggers
+* Count occurrences
+* Return highest count
+-----------------------------------------------------
+==== Vitality Hub ====
+1. Add Mood Entry
+2. View Trends
+3. Exit
+Interface Design
+-----------------------------------------------------
+Planning
+
+1. Core loop (CLI)
+-menu works
+-user can choose options
+-menu loops back to the main once an entry is added
+2. Create entry
+-input → MoodEntry
+3. Save entry
+-connect to FileManager
+4. Load entries
+-get vector working cleanly
+5. TrendAnalyzer
+-average stress first (simplest win)
+6. Then extras
+-most frequent trigger
+-stress by day
+-ASCII graph
+
+one feature → test → move on
+
+
+
+TODOS
+- ADD INPUT VALIDATION FOR THE OPTIONS
+-
+
+
+
+
+
+----------------UML--------------------
+Classes and Relationships
+🟦 MoodEntry
++----------------------+
+|      MoodEntry       |
++----------------------+
+| - stressLevel : int  |
+| - anxietyLevel : int |
+| - triggers : vector<string> |
+| - timestamp : string |
++----------------------+
+| + MoodEntry(...)     |
+| + getStressLevel()   |
+| + getAnxietyLevel()  |
+| + getTriggers()      |
+| + getTimestamp()     |
++----------------------+
+
+🟩 FileManager
++----------------------+
+|     FileManager      |
++----------------------+
+|                      |
++----------------------+
+| + saveEntry(entry)   |
+| + loadEntries()      |
++----------------------+
+🟨 TrendAnalyzer
++------------------------------+
+|       TrendAnalyzer          |
++------------------------------+
+| - logs : vector<MoodEntry>   |
++------------------------------+
+| + TrendAnalyzer(data)        |
+| + getAverageStress()         |
+| + getAverageAnxiety()        |
+| + getMostFrequentTrigger()   |
+| + getStressByDay()           |
++------------------------------+
+🟥 Main
+-creates MoodEntry
+-uses FileManager
+-uses TrendAnalyzer
+-----------------------------------------------------
