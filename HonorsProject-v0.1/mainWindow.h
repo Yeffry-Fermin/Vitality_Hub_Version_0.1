@@ -1,16 +1,15 @@
 #pragma
 
-#include "fileManager.h"
 #include "trendAnalyzer.h"
 #include <string>
 
 class MainWindow {
 private:
     // These are the "Sub-Bosses" that MainWindow manages
-    FileManager fileManager;
-    TrendAnalyzer* analyzer; // We use a pointer because data might change
+//    FileManager fileManager;
+//    TrendAnalyzer* analyzer; // We use a pointer because data might change
 //    BreathingCoach coach;
-    string getTimestamp();
+//    string getTimestamp();
 
 public:
     // Constructor: Sets up the file manager and other components

@@ -1,12 +1,14 @@
+#include <string>
 #include "mainWindow.h"
 #include "moodEntry.h"
 #include <iostream>
-#include <string>
+#include <limits>
+#include <vector>
 #include <chrono>   // For the clock
 #include <ctime>    // For the calendar conversion
 #include <iomanip>  // For the time formatting (put_time)
 #include <sstream>  // For the string "bucket" (ostringstream)
-using namespace std;
+#include "databaseManager.h"
 
 
 //When user clicks Save Log sample of getting data and saving
@@ -27,31 +29,28 @@ void MainWindow::onAddMoodEntry() {
     
     cin.ignore(numeric_limits<streamsize>::max(), '\n');
 
-    cout << "Enter your triggers Ex. exam, rent: \n";
-    string triggers;
+    cout << "Enter your triggers separated by commas ex: exam, rent: \n";
+    std::string triggers;
     getline(cin, triggers);
     
-    vector<string> parsedStrings = parseTriggers(triggers);
-    cout << "Entry successful!\nPress enter to return...";
-
-    cin.ignore(numeric_limits<streamsize>::max(), '\n');
+    vector<std::string> parsedTriggers = parseTriggers(triggers);
     
-    
-    string currentTime = getTimestamp(); // Nice and clean!
-
-    MoodEntry newEntry(stressLevel, anxietyLevel, parsedStrings, currentTime);
-    
-    FileManager fm;
-    fm.saveEntry(newEntry);
+    cout << "Enter a note about your mood: ";
+    std::string note;
+    getline(cin, note);
+    cout <<"---------------------------\n";
+    DatabaseManager db;
+    MoodEntry newEntry(stressLevel, anxietyLevel, note, parsedTriggers);
+    db.createEntry(newEntry);
 }
  
 //Helper function to get the time the log was created
 
-vector<string> MainWindow::parseTriggers(string input) {
+vector<std::string> MainWindow::parseTriggers(std::string input) {
     
-    vector<string> result;
-    string temp;
-    stringstream ss(input);
+    vector<std::string> result;
+    std::string temp;
+    std::stringstream ss(input);
 
     while (getline(ss, temp, ',')) {
         // optional: remove leading space
@@ -64,10 +63,3 @@ vector<string> MainWindow::parseTriggers(string input) {
     return result;
 }
 
-string MainWindow::getTimestamp() {
-    time_t now = time(nullptr);
-        char buf[20];
-        // This formats the time directly into the 'buf' character array
-        strftime(buf, sizeof(buf), "%Y-%m-%d %H:%M", localtime(&now));
-        return string(buf);
-}
