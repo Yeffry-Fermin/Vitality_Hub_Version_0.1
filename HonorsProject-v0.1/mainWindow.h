@@ -22,7 +22,7 @@ public:
     void onAddMoodEntry();   // Logic to gather input and save to file
     void onTrendsClicked(); // Logic to trigger the analyzer and show results
     void onCalmRoomClicked(); // Logic to start the breathing coach
-    
+    int getValidInt(string prompt, int min, int max);
     vector<string> parseTriggers(string input);
 };
 
