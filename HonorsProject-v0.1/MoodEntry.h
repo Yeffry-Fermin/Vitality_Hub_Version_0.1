@@ -22,4 +22,5 @@ public:
     std::string getNote() const;
     std::vector<std::string> getTriggers() const;
     std::string getTimestamp() const;
+    static std::vector<std::string> parseTriggers(const std::string& rawTriggers);
 };

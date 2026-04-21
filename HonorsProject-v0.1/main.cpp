@@ -2,37 +2,36 @@
 #include <vector>
 #include <iostream>
 #include <limits>
-#include "moodEntry.h"
-#include "mainWindow.h"
-using namespace std;
+#include "MoodEntry.h"
+#include "AppController.h"
 
-
-
-int main() {
-    MainWindow controller;
+int main() {;
+    DatabaseManager globalDb;
+    AppController controller(globalDb); // Pass it in
     
     bool condition = true;
     int input;
     
     while(condition) {
-        cout << "\n==== Vitality Hub ====\n"
-             << "1. Log Mood Entry\n"
-             << "2. View Trends\n"
-             << "3. Exit\n"
-             << "Select an option: ";
+        std::cout << "\n==== Vitality Hub ====\n"
+             << "1. Log Mood Entry(Work In progress)\n"
+             << "2. View History(TBA)\n"
+             << "3. Analytics(TBA)\n"
+             << "4. Breathing Space(Not part of MVP)\n"
+             << "5. Exit \n";
         //add input validation later for now this is ok as MVP
-        cin >> input;
+        std::cin >> input;
         switch (input) {
             case 1: {
                 controller.onAddMoodEntry();
                 break;
             }
             case 2: {
-                cout << "Option Two Selected\n";
+                controller.onViewHistory();
                 break;
             }
             case 3: {
-                cout << "Exiting App\n";
+                controller.onViewAnalytics();
                 condition = false;
                 break;
             }

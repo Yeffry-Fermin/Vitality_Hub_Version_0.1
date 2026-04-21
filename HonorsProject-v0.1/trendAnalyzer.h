@@ -2,7 +2,7 @@
 
 #include <vector>
 #include <string>
-#include "moodEntry.h"
+#include "MoodEntry.h"
 using namespace std;
 
 class TrendAnalyzer {
