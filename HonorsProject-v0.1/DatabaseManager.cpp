@@ -11,8 +11,6 @@ DatabaseManager::DatabaseManager() {
         std::cerr << "Error opening database!" << std::endl;
     } else {
         createEntryTable();
-        // createTriggerListTable(); // No longer needed
-        // createBridgeTable();      // No longer needed
     }
 }
 
@@ -100,28 +98,4 @@ std::vector<MoodEntry> DatabaseManager::getEntries() {
     return entries;
 }
 
-//Bridge and JOin tables If i have time or future design
 
-//// 2. THE MASTER TRIGGER DICTIONARY
-//void DatabaseManager::createTriggerListTable() {
-//    // Added PRIMARY KEY and UNIQUE to prevent duplicate "Work" entries
-//    std::string sql = "CREATE TABLE IF NOT EXISTS trigger_list ("
-//                      "id INTEGER PRIMARY KEY AUTOINCREMENT, "
-//                      "name TEXT UNIQUE"
-//                      ");";
-//
-//    sqlite3_exec(db, sql.c_str(), NULL, 0, nullptr);
-//}
-
-//// 3. THE BRIDGE (Connecting Moods to Triggers)
-//void DatabaseManager::createBridgeTable() {
-//    // References must match 'mood_entry' and 'trigger_list' exactly
-//    std::string sql = "CREATE TABLE IF NOT EXISTS mood_trigger_bridge ("
-//                      "entry_id INTEGER, "
-//                      "trigger_id INTEGER, "
-//                      "FOREIGN KEY(entry_id) REFERENCES mood_entry(id), "
-//                      "FOREIGN KEY(trigger_id) REFERENCES trigger_list(id)"
-//                      ");";
-//
-//    sqlite3_exec(db, sql.c_str(), NULL, 0, nullptr);
-//}

@@ -8,8 +8,9 @@ private:
     DatabaseManager& db;
 public:
     AppController(DatabaseManager& dbInstance);
-    void onAddMoodEntry();   // Logic to gather input and save to file
-    void onViewHistory(); // Logic to trigger the analyzer and show results
+    void onAddMoodEntry();
+    void onViewHistory();
+    void onViewAnalytics();
     int getValidInt(string prompt, int min, int max);
 };
 

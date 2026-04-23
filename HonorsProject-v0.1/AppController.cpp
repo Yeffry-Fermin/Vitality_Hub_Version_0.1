@@ -79,7 +79,9 @@ void AppController::onViewHistory() {
     }
 }
 
-
+void AppController::onViewAnalytics() {
+    
+}
 //Helper function to help me with getting correct prompt values
 int AppController::getValidInt(string prompt, int min, int max) {
     int value;
