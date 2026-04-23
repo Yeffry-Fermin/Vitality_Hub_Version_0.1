@@ -66,35 +66,51 @@ void DatabaseManager::createEntry(const MoodEntry& entry) {
 
 // Get all entries history
 
-std::vector<MoodEntry> DatabaseManager::getEntries() {
+std::vector<MoodEntry> DatabaseManager::getEntries(int days) {
     std::vector<MoodEntry> entries;
-    std::string sql = "SELECT * FROM mood_entry;";
+    std::string sql;
+    
+    // 1. Decide which query to use
+    if (days > 0) {
+        // Filtered Query
+        sql = "SELECT * FROM mood_entry WHERE created_at >= DATETIME('now', ?);";
+    } else {
+        // All Time Query (No WHERE clause, no placeholder)
+        sql = "SELECT * FROM mood_entry;";
+    }
+
     sqlite3_stmt* stmt;
 
     if (sqlite3_prepare_v2(db, sql.c_str(), -1, &stmt, nullptr) == SQLITE_OK) {
         
-        // Loop through every row the database finds
+        // 2. Only bind if we have a placeholder '?'
+        if (days > 0) {
+            std::string dayParam = "-" + std::to_string(days) + " days";
+            sqlite3_bind_text(stmt, 1, dayParam.c_str(), -1, SQLITE_TRANSIENT);
+        }
+        
         while (sqlite3_step(stmt) == SQLITE_ROW) {
-            
-            // 1. Extract values by column index (Order: id, timestamp, stress, anxiety, note, triggers)
             int id = sqlite3_column_int(stmt, 0);
-            std::string timestamp = reinterpret_cast<const char*>(sqlite3_column_text(stmt, 1));
+            
+            // 3. Safety Check: Handle potential null values from the database
+            auto toStr = [](const unsigned char* text) {
+                return text ? std::string(reinterpret_cast<const char*>(text)) : "";
+            };
+
+            std::string timestamp = toStr(sqlite3_column_text(stmt, 1));
             int stress = sqlite3_column_int(stmt, 2);
             int anxiety = sqlite3_column_int(stmt, 3);
-            std::string note = reinterpret_cast<const char*>(sqlite3_column_text(stmt, 4));
-            std::string rawTriggers = reinterpret_cast<const char*>(sqlite3_column_text(stmt, 5));
+            std::string note = toStr(sqlite3_column_text(stmt, 4));
+            std::string rawTriggers = toStr(sqlite3_column_text(stmt, 5));
 
-            // 2. Use parser to turn the string back into a vector
             std::vector<std::string> triggerList = MoodEntry::parseTriggers(rawTriggers);
-            // 3. Create the object and add it to our list
-            // Constructor order: (id, stress, anxiety, note, triggers, timestamp)
             entries.emplace_back(id, stress, anxiety, note, triggerList, timestamp);
         }
     } else {
         std::cerr << "Fetch Error: " << sqlite3_errmsg(db) << std::endl;
     }
 
-    sqlite3_finalize(stmt); // Clean up the "bookmark"
+    sqlite3_finalize(stmt);
     return entries;
 }
 

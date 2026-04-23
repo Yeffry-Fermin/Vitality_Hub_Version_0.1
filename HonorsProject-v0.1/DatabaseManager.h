@@ -9,10 +9,9 @@ private:
 public:
     void createEntryTable();
     void createTriggerListTable();
-//    void createBridgeTable();
 
     void createEntry(const MoodEntry& entry);
-    std::vector<MoodEntry>getEntries();
+    std::vector<MoodEntry>getEntries(int days);
 
     DatabaseManager();  // Opens DB and calls the blueprints
     ~DatabaseManager(); // Closes the DB connection safely
