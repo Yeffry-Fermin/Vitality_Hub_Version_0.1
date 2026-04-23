@@ -1,16 +1,17 @@
 #pragma
 #include "DatabaseManager.h"
-#include "trendAnalyzer.h"
-#include <string>
+#include "AnalyticsEngine.h"
 
 class AppController {
 private:
     DatabaseManager& db;
+    AnalyticsEngine& analytics;
 public:
-    AppController(DatabaseManager& dbInstance);
+    AppController(DatabaseManager& dbInstance, AnalyticsEngine& analytics);
     void onAddMoodEntry();
     void onViewHistory();
     void onViewAnalytics();
-    int getValidInt(string prompt, int min, int max);
+    void onViewAverages();
+    int getValidInt(std::string prompt, int min, int max);
 };
 

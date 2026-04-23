@@ -1,6 +1,4 @@
 #include <string>
-#include "AppController.h"
-#include "MoodEntry.h"
 #include <iostream>
 #include <limits>
 #include <vector>
@@ -8,11 +6,16 @@
 #include <ctime>    // For the calendar conversion
 #include <iomanip>  // For the time formatting (put_time)
 #include <sstream>  // For the string "bucket" (ostringstream)
-#include "DatabaseManager.h"
 
-//Constructor to initialize db instance
-AppController::AppController(DatabaseManager& dbInstance) : db(dbInstance) {
-    // The body can stay empty or handle other setup tasks
+#include "MoodEntry.h"
+#include "AppController.h"
+#include "DatabaseManager.h"
+#include "AnalyticsEngine.h"
+
+// Updated constructor to handle both dependencies
+AppController::AppController(DatabaseManager& dbInstance, AnalyticsEngine& analyticsInstance)
+    : db(dbInstance), analytics(analyticsInstance)
+{
 }
 
 void AppController::onAddMoodEntry() {
@@ -28,14 +31,14 @@ void AppController::onAddMoodEntry() {
     
     do {
         std::cout << "Enter your triggers separated by commas ex: exam, rent: \n";
-        getline(cin, triggers);
+        getline(std::cin, triggers);
     } while (triggers.length() < 2);
     
-    vector<std::string> parsedTriggers = MoodEntry::parseTriggers(triggers);
+    std::vector<std::string> parsedTriggers = MoodEntry::parseTriggers(triggers);
     
     std::cout << "Enter a note about your mood: ";
     std::string note;
-    getline(cin, note);
+    getline(std::cin, note);
     std::cout <<"---------------------------\n";
     
     // Create and save db instance entry
@@ -44,7 +47,7 @@ void AppController::onAddMoodEntry() {
 }
 
 void AppController::onViewHistory() {
-    std::vector<MoodEntry> history = db.getEntries();
+    std::vector<MoodEntry> history = db.getEntries(0);
     
     if (history.empty()) {
         std::cout << "\nNo logs found yet. Start by adding your first entry!\n";
@@ -83,24 +86,25 @@ void AppController::onViewAnalytics() {
     
 }
 //Helper function to help me with getting correct prompt values
-int AppController::getValidInt(string prompt, int min, int max) {
+int AppController::getValidInt(std::string prompt, int min, int max) {
     int value;
     bool isValid;
     
     do {
         isValid = true; // 1. Start by assuming the input is good
-        std::cout << prompt << endl;
+        std::cout << prompt << std::endl;
         
         // 2. Try to read the number AND check the range If the read fails OR the number is out of bounds...
         if (!(std::cin >> value) || value < min || value > max) {
             isValid = false;
             
             std::cin.clear(); // Reset the safety breaker
-            std::cin.ignore(numeric_limits<streamsize>::max(), '\n'); // Clear the pipe
+            std::cin.ignore(std::numeric_limits<std::streamsize>::max(), '\n'); // Clear the pipe
             
-            cerr << "Error: Please enter a number between " << min << " and " << max << "." << endl;
+            std::cerr << "Error: Please enter a number between " << min << " and " << max << "." << std::endl;
         }
     } while (!isValid); // 4. If NOT valid, go back to the top
     
     return value;
 }
+
