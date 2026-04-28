@@ -1,1 +1,5 @@
-
+-Future refactor
+-The db INSTANCE gets passed into the controller, i believe its best if it lives on the Analytics engine
+-Division by 0 on the trigger frequencies
+-loading animation for intereactivity
+-struct currently is in the global namespace, make sure to make a models file to keep ur structs

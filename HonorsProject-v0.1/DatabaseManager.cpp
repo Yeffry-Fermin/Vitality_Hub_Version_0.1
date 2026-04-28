@@ -64,8 +64,7 @@ void DatabaseManager::createEntry(const MoodEntry& entry) {
     std::cout << "Log Saved Successfully!" << std::endl;
 }
 
-// Get all entries history
-
+// Get entries by
 std::vector<MoodEntry> DatabaseManager::getEntries(int days) {
     std::vector<MoodEntry> entries;
     std::string sql;
@@ -88,9 +87,10 @@ std::vector<MoodEntry> DatabaseManager::getEntries(int days) {
             std::string dayParam = "-" + std::to_string(days) + " days";
             sqlite3_bind_text(stmt, 1, dayParam.c_str(), -1, SQLITE_TRANSIENT);
         }
-        
+        int rowCount = 0; // Temporary counter
         while (sqlite3_step(stmt) == SQLITE_ROW) {
             int id = sqlite3_column_int(stmt, 0);
+            rowCount++;
             
             // 3. Safety Check: Handle potential null values from the database
             auto toStr = [](const unsigned char* text) {
@@ -98,6 +98,8 @@ std::vector<MoodEntry> DatabaseManager::getEntries(int days) {
             };
 
             std::string timestamp = toStr(sqlite3_column_text(stmt, 1));
+            
+           
             int stress = sqlite3_column_int(stmt, 2);
             int anxiety = sqlite3_column_int(stmt, 3);
             std::string note = toStr(sqlite3_column_text(stmt, 4));
@@ -114,4 +116,40 @@ std::vector<MoodEntry> DatabaseManager::getEntries(int days) {
     return entries;
 }
 
+// This function returns a list of "calculated" points
+std::vector<MomentumPoint> DatabaseManager::getMoodMomentum() {
+    std::vector<MomentumPoint> points;
 
+    // We use created_at to order the 'window' chronologically
+    std::string sql =
+        "SELECT created_at, "
+        "AVG(stress_level) OVER (ORDER BY created_at ROWS BETWEEN 6 PRECEDING AND CURRENT ROW), "
+        "AVG(anxiety_level) OVER (ORDER BY created_at ROWS BETWEEN 6 PRECEDING AND CURRENT ROW) "
+        "FROM mood_entry "
+        "ORDER BY created_at DESC "
+        "LIMIT 14;"; // We only show the last 2 weeks to keep the graph clean
+
+    sqlite3_stmt* stmt;
+
+    if (sqlite3_prepare_v2(db, sql.c_str(), -1, &stmt, nullptr) == SQLITE_OK) {
+        
+        while (sqlite3_step(stmt) == SQLITE_ROW) {
+            MomentumPoint p;
+            
+            // Extract the timestamp
+            const unsigned char* dateText = sqlite3_column_text(stmt, 0);
+            p.date = dateText ? reinterpret_cast<const char*>(dateText) : "Unknown";
+
+            // Extract the calculated averages (column 1 and 2)
+            p.rollingStress = static_cast<float>(sqlite3_column_double(stmt, 1));
+            p.rollingAnxiety = static_cast<float>(sqlite3_column_double(stmt, 2));
+
+            points.push_back(p);
+        }
+    } else {
+        std::cerr << "Momentum Query Error: " << sqlite3_errmsg(db) << std::endl;
+    }
+
+    sqlite3_finalize(stmt);
+    return points;
+}

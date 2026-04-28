@@ -82,9 +82,85 @@ void AppController::onViewHistory() {
     }
 }
 
-void AppController::onViewAnalytics() {
+void AppController::onViewAverages(int option) {
+    std::vector<MoodEntry> entries = db.getEntries(option);
+    
+    if(entries.empty()) {
+        std::cout << "Not enough data in the system\n";
+        return;
+    }
+    float avgStress = analytics.getAverageStress(entries);
+    float avgAnxiety = analytics.getAverageAnxiety(entries);
+    
+
+    std::cout << "\n================================" << std::endl;
+    std::cout << "   MOOD REPORT (Last " << option << " Days)" << std::endl;
+    std::cout << "================================" << std::endl;
+
+    std::cout << "Stress:  " << getProgressBar(avgStress) << " " << std::fixed
+              << std::setprecision(2) <<avgStress << "/10" << std::endl;
+    
+    std::cout << "Anxiety: " << getProgressBar(avgAnxiety) << " " << std::fixed
+              << std::setprecision(2) << avgAnxiety << "/10" << std::endl;
+    std::cout << "================================" << std::endl;
     
 }
+void AppController::onMostFrequentTrigger(int option) {
+    std::vector<MoodEntry> entries = db.getEntries(option);
+    
+    auto insight = analytics.getTriggerInsights(entries);
+    
+    
+    std::cout << "\n========================================" << std::endl;
+    std::cout << "        TOP MOOD TRIGGER REPORT       " << std::endl;
+    std::cout << "========================================" << std::endl;
+
+    // Check if a trigger was actually found
+    if (insight.trigger == "None") {
+        std::cout << " No data available yet. Keep logging! 📝" << std::endl;
+    } else {
+        std::cout << " Trigger Name:   " << insight.trigger << std::endl;
+        std::cout << " Frequency:      " << insight.frequency << " times" << std::endl;
+        
+        // Format floats to 1 decimal place
+        std::cout << std::fixed << std::setprecision(1);
+        std::cout << " Avg. Stress:    " << insight.avgStress << " / 10" << std::endl;
+        std::cout << " Avg. Anxiety:   " << insight.avgAnxiety << " / 10" << std::endl;
+    }
+
+    std::cout << "========================================\n" << std::endl;
+
+}
+
+void AppController::onViewMoodTrends() {
+    
+    std::vector<MomentumPoint> points = db.getMoodMomentum();
+    
+    std::cout << "\n==== MOOD MOMENTUM (Last 14 Logs) ====\n";
+    std::cout << "DATE       [ STRESS ]   |   [ ANXIETY ]\n";
+    
+    // We iterate backwards to show the most recent data at the bottom
+    for (auto it = points.rbegin(); it != points.rend(); ++it) {
+        std::cout << it->date << " | ";
+
+        // Draw Stress Bar
+        int sWidth = (int)it->rollingStress;
+        for(int i=0; i<10; i++) std::cout << (i < sWidth ? "█" : " ");
+
+        std::cout << " | ";
+
+        // Draw Anxiety Bar
+        int aWidth = (int)it->rollingAnxiety;
+        for(int i=0; i<10; i++) std::cout << (i < aWidth ? "█" : " ");
+
+        std::cout << "\n";
+    }
+}
+
+
+
+
+
 //Helper function to help me with getting correct prompt values
 int AppController::getValidInt(std::string prompt, int min, int max) {
     int value;
@@ -108,3 +184,15 @@ int AppController::getValidInt(std::string prompt, int min, int max) {
     return value;
 }
 
+std::string AppController::getProgressBar(float value, int maxScale) const {
+    int filledLength = static_cast<int>(value); // Round the float to an int
+    int emptyLength = maxScale - filledLength;
+
+    // Create the "filled" part (e.g., #######)
+    std::string filled(filledLength, '#');
+    
+    // Create the "empty" part (e.g., ---)
+    std::string empty(emptyLength, '-');
+
+    return "[" + filled + empty + "]";
+}
