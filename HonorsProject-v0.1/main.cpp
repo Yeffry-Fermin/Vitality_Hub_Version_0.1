@@ -26,7 +26,7 @@ void showLoadingAppend(int load) {
     std::cout << std::endl;
 }
 
-int main() {;
+int main() {
     DatabaseManager globalDb;
     AnalyticsEngine analytics;
     AppController controller(globalDb, analytics);
@@ -35,15 +35,16 @@ int main() {;
     int input;
     
     while(isMainMenuActive) {
+        // --- CHANGED: Cleaned up numbering to 1-4 ---
         std::cout << "\n==== Vitality Hub ====\n"
-        << "1. Log Mood Entry\n" // DONE
-        << "2. View History\n" // DONE
-        << "3. Analytics(TBA)\n" // WORK IN PROGRESS
-        << "4. Breathing Space(Not part of MVP)\n"
-        << "5. Close App\n";
-        //add input validation later for now this is ok as MVP
+        << "1. Log Mood Entry\n"
+        << "2. View History\n"
+        << "3. Analytics Engine\n"
+        << "4. Close App\n";
+        
         std::cout << "Enter choice: ";
         std::cin >> input;
+        
         switch (input) {
             case 1: {
                 controller.onAddMoodEntry();
@@ -59,12 +60,14 @@ int main() {;
                 int analyticsInput;
                 
                 while(isAnalyticsMenuActive) {
-                    std::cout << "\n==== Analytics & Trends ====\n"
-                    << "1. Mood Averages (Stress & Anxiety)\n"
-                    << "2. Trigger Frequencies (Most Common)\n"
-                    << "3. Monthly/Weekly Mood Trends (TBA)\n"
-                    << "4. Correlation Analysis (TBA)\n"
-                    << "5. Back to Main Menu\n";
+                    // --- CHANGED: Updated menu text for the Triad Model ---
+                    std::cout << "\n==== ANALYTICS & INSIGHTS ====\n";
+                    std::cout << "1. Resource Baselines (System Averages)\n";
+                    std::cout << "2. Trigger Impact & Pattern Finder\n";
+                    std::cout << "3. Vitality Momentum (14-Day View)\n";
+                    std::cout << "4. System Linkages (Correlation Report)\n";
+                    std::cout << "5. Return to Dashboard\n";
+                    std::cout << "Selection: ";
                     
                     std::cout << "Enter choice: ";
                     std::cin >> analyticsInput;
@@ -77,9 +80,9 @@ int main() {;
                             
                             while(isMoodAvgActive) {
                                 std::cout << "\n==== Mood Averages ====\n"
-                                << "1. Last 7 Days\n" //DONE
-                                << "2. Last 30 Days\n" //DONE
-                                << "3. All Time\n" //DONE(SMALL BUG ON MENU)
+                                << "1. Last 7 Days\n"
+                                << "2. Last 30 Days\n"
+                                << "3. All Time\n"
                                 << "4. Back to Analytics Menu\n";
                                 
                                 std::cout << "Enter choice: ";
@@ -106,19 +109,18 @@ int main() {;
                                         break;
                                 }
                             }
-                            
                             break;
                         }
                             
-                        case 2: {// function to handle trigger frequencies
+                        case 2: {
                             bool isFrequentActive = true;
                             int frequentMenuInput;
                             
                             while(isFrequentActive) {
                                 std::cout << "\n==== View Option ====\n"
-                                << "1. Last 7 Days\n" //DONE
-                                << "2. Last 30 Days\n" //DONE
-                                << "3. All Time\n" //DONE(SMALL BUG ON MENU)
+                                << "1. Last 7 Days\n"
+                                << "2. Last 30 Days\n"
+                                << "3. All Time\n"
                                 << "4. Back to Analytics Menu\n";
                                 
                                 std::cout << "Enter choice: ";
@@ -151,10 +153,11 @@ int main() {;
                             bool isMoodTrendsActive = true;
                             int moodChoiceInput;
                             while(isMoodTrendsActive) {
+                                // --- CHANGED: Updated text to match new metrics ---
                                 std::cout << "\n==== Mood Momentum ====\n"
-                                << "1. Combined Analysis 14 day (Recommended)\n"
-                                << "2. Stress Trends Only\n TBA"
-                                << "3. Anxiety Trends Only\n TBA"
+                                << "1. Combined Triad Analysis (14-day)\n"
+                                << "2. Stress Trends Only (TBA)\n"
+                                << "3. Energy Trends Only (TBA)\n"
                                 << "4. Back\n";
                                 
                                 std::cout << "Enter choice: ";
@@ -174,8 +177,9 @@ int main() {;
                             break;
                         }
                         case 4: // TBA
+                            std::cout << "\nFeature coming soon!\n";
                             break;
-                        case 5: {// Go back to previous menu
+                        case 5: {
                             isAnalyticsMenuActive = false;
                             break;
                         }
@@ -184,9 +188,10 @@ int main() {;
                             break;
                     }
                 }
-            } case 4: {
+                // --- BUG FIX: Added missing break to prevent the app from closing! ---
                 break;
-            } case 5: {
+            }
+            case 4: {
                 isMainMenuActive = false;
                 break;
             }
@@ -197,4 +202,3 @@ int main() {;
     }
     return 0;
 }
-
