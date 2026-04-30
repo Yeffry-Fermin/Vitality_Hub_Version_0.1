@@ -4,33 +4,41 @@
 #include <ctime>
 #include <sstream>
 
-// Constructor
-MoodEntry::MoodEntry(int stressLevel, int anxietyLevel, std::string note, std::vector<std::string> triggers) {
+// Constructor for NEW entries (No ID or timestamp yet)
+MoodEntry::MoodEntry(int stressLevel, int energyLevel, double sleepHours, std::string note, std::vector<std::string> triggers) {
     this->stressLevel = stressLevel;
-    this->anxietyLevel = anxietyLevel;
+    this->energyLevel = energyLevel;
+    this->sleepHours = sleepHours;
     this->triggers = triggers;
     this->note = note;
 }
 
-MoodEntry::MoodEntry(int id, int stressLevel, int anxietyLevel, std::string note, std::vector<std::string> triggers, std::string timestamp) {
+// Constructor for EXISTING entries (Includes ID and timestamp from DB)
+MoodEntry::MoodEntry(int id, int stressLevel, int energyLevel, double sleepHours, std::string note, std::vector<std::string> triggers, std::string timestamp) {
     this->id = id;
     this->stressLevel = stressLevel;
-    this->anxietyLevel = anxietyLevel;
+    this->energyLevel = energyLevel;
+    this->sleepHours = sleepHours;
     this->note = note;
     this->triggers = triggers;
     this->timestamp = timestamp;
 }
 
-// Getters
+// --- Getters ---
 int MoodEntry::getStressLevel() const {
     return stressLevel;
 }
 
+int MoodEntry::getEnergyLevel() const { // Replaced getAnxietyLevel
+    return energyLevel;
+}
+
+double MoodEntry::getSleepHours() const { // New getter for Sleep
+    return sleepHours;
+}
+
 int MoodEntry::getId() const {
     return id;
-}
-int MoodEntry::getAnxietyLevel() const {
-    return anxietyLevel;
 }
 
 std::vector<std::string> MoodEntry::getTriggers() const {
@@ -45,6 +53,7 @@ std::string MoodEntry::getNote() const {
     return note;
 }
 
+// --- Helper Functions ---
 std::vector<std::string> MoodEntry::parseTriggers(const std::string& rawTriggers) {
     std::vector<std::string> result;
     std::stringstream ss(rawTriggers);
