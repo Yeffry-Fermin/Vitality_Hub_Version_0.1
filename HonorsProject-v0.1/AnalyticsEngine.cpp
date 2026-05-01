@@ -1,5 +1,6 @@
 #include "AnalyticsEngine.h"
 #include "MoodEntry.h"
+#include "alglib/statistics.h" // library method to calc
 #include <string>
 #include <vector>
 #include <sstream>
@@ -67,7 +68,7 @@ std::string AnalyticsEngine::getVitalityAdvice(double stress, double energy, dou
     }
     // ZONE 4: PEAK CAPACITY (Energy is significantly higher than Stress)
     else {
-        message = "PEAK CAPACITY: You have a massive energy surplus! This is the perfect "
+        message = "PEAK CAPACITY: You have a massive energy surplus. This is the perfect "
                   "time to tackle your hardest project or a difficult study session.";
     }
 
@@ -127,7 +128,7 @@ float AnalyticsEngine::calculateGlobalBaseline(const std::vector<MoodEntry>& ent
 }
 
 // This function takes a list of daily mood entries and figures out which 'trigger' shows up most often.
-std::vector<AnalyticsEngine::TriggerAnalysis> AnalyticsEngine::getTriggerInsights(const std::vector<MoodEntry>& entries) {
+std::vector<AnalyticsEngine::TriggerAnalysis> AnalyticsEngine::getTriggerInsights(const std::vector<MoodEntry> &entries) {
     std::vector<TriggerAnalysis> insights;
     if (entries.empty()) return insights;
 
@@ -203,4 +204,66 @@ std::vector<AnalyticsEngine::TriggerAnalysis> AnalyticsEngine::getTriggerInsight
     }
 
     return insights;
+}
+
+AnalyticsEngine::CorrelationMetrics AnalyticsEngine::correlationLink(const std::vector<MoodEntry> &entries) {
+    alglib::real_1d_array energyPile;
+    alglib::real_1d_array sleepPile;
+    alglib::real_1d_array stressPile;
+
+    // Piles are passed by ref so we avoid making copies
+    extractData(entries, energyPile, Mode::ENERGY);
+    extractData(entries, sleepPile, Mode::SLEEP);
+    extractData(entries, stressPile, Mode::STRESS);
+
+    // Perform pearson correlation formula(Shits too annoying to hand code)
+    double energySleepCorrelation = alglib::pearsoncorrelation(energyPile, sleepPile, entries.size());
+    double energyStressCorrelation = alglib::pearsoncorrelation(energyPile, stressPile, entries.size());
+    double sleepStressCorrelation = alglib::pearsoncorrelation(sleepPile, stressPile, entries.size());
+    
+    return {
+        energySleepCorrelation,
+        energyStressCorrelation,
+        sleepStressCorrelation
+    };
+}
+
+// Helper function to extra pile data from mood entry vector
+void AnalyticsEngine::extractData(const std::vector<MoodEntry> &entries, alglib::real_1d_array &outPile, Mode mode) {
+    int size = entries.size();
+    outPile.setlength(size);
+    for (int i = 0; i < size; i++) {
+        switch (mode) {
+            case Mode::ENERGY:
+                outPile[i] = entries[i].getEnergyLevel();
+                break;
+            case Mode::SLEEP:
+                outPile[i] = entries[i].getSleepHours();
+                break;
+            case Mode::STRESS:
+                outPile[i] = entries[i].getStressLevel();
+            default:
+                break;
+        }
+    }
+}
+
+// Deal with the logic to display appropriate message based on correlation metrics
+
+std::string getInsight(double r, std::string varA, std::string varB) {
+    if (r >= 0.7) {
+        return "System Report: The data identifies a Strong Positive correlation (r = " + std::to_string(r) + ") between " + varA + " and " + varB + " Statistically, this indicates that " + varA + "acts as a primary driver for " + varB + " levels within the observed period. From an optimization standpoint, " + varA + " should be prioritized as a key metric for improving overall system stability.";
+    }
+    else if (r >= 0.3) {
+        // Handle Moderate Positive
+    }
+    else if (r > -0.3) {
+        // Handle Weak/Negligible
+    }
+    else if (r > -0.7) {
+        // Handle Moderate Negative
+    }
+    else {
+        // Handle Strong Negative (the final 'else' catches everything else, usually -1.0 to -0.7)
+    }
 }
