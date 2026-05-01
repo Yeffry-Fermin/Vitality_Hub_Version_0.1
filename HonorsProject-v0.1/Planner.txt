@@ -1,6 +1,15 @@
--Future refactor
--The db INSTANCE gets passed into the controller, i believe its best if it lives on the Analytics engine
--Division by 0 on the trigger frequencies
--loading animation for intereactivity
--struct currently is in the global namespace, make sure to make a models file to keep ur structs
+-Future refactor menu
+-The db INSTANCE gets passed into the controller, i believe its best if it lives on the Analytics engine(Design flaw not logic)
+-Division by 0 on the trigger frequencies(Check this)
+-loading animation for intereactivity(DONE)
+-struct currently is in the global namespace, make sure to make a models.h file to keep ur structs
 -have percent on mood momentum graph
+
+
+
+
+
+
+
+-FUTURE FEATURES
+-Correlation report needs a way to filter out the noise(abnormal highs and lows) that dont represent a general trend
