@@ -15,14 +15,14 @@ void showLoadingAppend(int load) {
     std::cout << "Loading" << std::flush;
 
     for (int i = 0; i < load; ++i) {
-        // 2. Wait for half a second 😴
-        std::this_thread::sleep_for(std::chrono::milliseconds(500));
+        // 2. Wait for half a second
+        std::this_thread::sleep_for(std::chrono::milliseconds(200));
         
         // 3. Just add one dot to the end of the current line
         std::cout << "." << std::flush;
     }
 
-    // 4. Move to a new line so the next output starts fresh 🏁
+    // 4. Move to a new line so the next output starts fresh 
     std::cout << std::endl;
 }
 
@@ -35,7 +35,6 @@ int main() {
     int input;
     
     while(isMainMenuActive) {
-        // --- CHANGED: Cleaned up numbering to 1-4 ---
         std::cout << "\n==== Vitality Hub ====\n"
         << "1. Log Mood Entry\n"
         << "2. View History\n"
@@ -177,6 +176,7 @@ int main() {
                             break;
                         }
                         case 4: // TBA
+                            controller.onViewCorrelationReport();
                             std::cout << "\nFeature coming soon!\n";
                             break;
                         case 5: {

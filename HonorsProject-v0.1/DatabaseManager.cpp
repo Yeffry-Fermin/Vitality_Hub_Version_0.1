@@ -18,9 +18,7 @@ DatabaseManager::~DatabaseManager() {
     sqlite3_close(db);
 }
 
-// 1. THE MOOD LOGS
 void DatabaseManager::createEntryTable() {
-    // --- CHANGED: Swapped anxiety for energy_level and sleep_hours ---
     std::string sql = "CREATE TABLE IF NOT EXISTS mood_entry ("
                       "id INTEGER PRIMARY KEY AUTOINCREMENT, "
                       "created_at TEXT DEFAULT CURRENT_TIMESTAMP, "
@@ -38,7 +36,7 @@ void DatabaseManager::createEntryTable() {
 void DatabaseManager::createEntry(const MoodEntry& entry) {
     char* errorMessage = nullptr;
 
-    // --- STEP A: Squish the triggers into one string ---
+    // Squish the triggers into one string ---
     std::string triggerString = "";
     std::vector<std::string> triggers = entry.getTriggers();
     for (size_t i = 0; i < triggers.size(); ++i) {
@@ -46,8 +44,7 @@ void DatabaseManager::createEntry(const MoodEntry& entry) {
         if (i < triggers.size() - 1) triggerString += ", "; // Add comma between words
     }
 
-    // --- STEP B: Update the SQL to include Energy and Sleep ---
-    // Note: We're anticipating that you'll add getEnergyLevel() and getSleepHours() to MoodEntry!
+    // Update the SQL to include Energy and Sleep ---
     std::string moodSql = "INSERT INTO mood_entry (stress_level, energy_level, sleep_hours, note, triggers) VALUES (" +
                           std::to_string(entry.getStressLevel()) + ", " +
                           std::to_string(entry.getEnergyLevel()) + ", " +
@@ -97,7 +94,7 @@ std::vector<MoodEntry> DatabaseManager::getEntries(int days) {
 
             std::string timestamp = toStr(sqlite3_column_text(stmt, 1));
             
-            // --- CHANGED: Extracting the new columns by their correct SQL index ---
+            // Extracting the new columns by their correct SQL index
             int stress = sqlite3_column_int(stmt, 2);
             int energy = sqlite3_column_int(stmt, 3);
             double sleep = sqlite3_column_double(stmt, 4); // double for REAL
@@ -106,7 +103,7 @@ std::vector<MoodEntry> DatabaseManager::getEntries(int days) {
 
             std::vector<std::string> triggerList = MoodEntry::parseTriggers(rawTriggers);
             
-            // --- CHANGED: Passing the new variables to the MoodEntry constructor ---
+            // Passing the new variables to the MoodEntry constructor ---
             entries.emplace_back(id, stress, energy, sleep, note, triggerList, timestamp);
         }
     } else {
@@ -121,7 +118,7 @@ std::vector<MoodEntry> DatabaseManager::getEntries(int days) {
 std::vector<MomentumPoint> DatabaseManager::getMoodMomentum() {
     std::vector<MomentumPoint> points;
 
-    // --- CHANGED: Added AVG logic for Energy and Sleep instead of Anxiety ---
+    // Added AVG logic for Energy and Sleep instead of Anxiety ---
     std::string sql =
         "SELECT created_at, "
         "AVG(stress_level) OVER (ORDER BY created_at ROWS BETWEEN 6 PRECEDING AND CURRENT ROW), "
@@ -141,7 +138,7 @@ std::vector<MomentumPoint> DatabaseManager::getMoodMomentum() {
             const unsigned char* dateText = sqlite3_column_text(stmt, 0);
             p.date = dateText ? reinterpret_cast<const char*>(dateText) : "Unknown";
 
-            // --- CHANGED: Pulling columns 1, 2, and 3 from the SQL statement ---
+            // Pulling columns 1, 2, and 3 from the SQL statement
             p.rollingStress = static_cast<float>(sqlite3_column_double(stmt, 1));
             p.rollingEnergy = static_cast<float>(sqlite3_column_double(stmt, 2));
             p.rollingSleep = static_cast<float>(sqlite3_column_double(stmt, 3));
