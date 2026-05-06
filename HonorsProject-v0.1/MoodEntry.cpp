@@ -4,7 +4,6 @@
 #include <ctime>
 #include <sstream>
 
-// Constructor for NEW entries (No ID or timestamp yet)
 MoodEntry::MoodEntry(int stressLevel, int energyLevel, double sleepHours, std::string note, std::vector<std::string> triggers) {
     this->stressLevel = stressLevel;
     this->energyLevel = energyLevel;
@@ -53,7 +52,6 @@ std::string MoodEntry::getNote() const {
     return note;
 }
 
-// --- Helper Functions ---
 std::vector<std::string> MoodEntry::parseTriggers(const std::string& rawTriggers) {
     std::vector<std::string> result;
     std::stringstream ss(rawTriggers);

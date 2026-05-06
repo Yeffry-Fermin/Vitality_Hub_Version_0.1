@@ -6,8 +6,8 @@
 #include "AppController.h"
 #include "AnalyticsEngine.h"
 
-#include <thread> // Required for sleeping
-#include <chrono> // Required for time units
+#include <thread>
+#include <chrono> 
 #include <string>
 
 void showLoadingAppend(int load) {
@@ -64,7 +64,7 @@ int main() {
                     std::cout << "1. Resource Baselines (System Averages)\n";
                     std::cout << "2. Trigger Impact & Pattern Finder\n";
                     std::cout << "3. Vitality Momentum (14-Day View)\n";
-                    std::cout << "4. System Linkages (Correlation Report)\n";
+                    std::cout << "4. Correlation Report)\n";
                     std::cout << "5. Return to Dashboard\n";
                     std::cout << "Selection: ";
                     
@@ -155,8 +155,6 @@ int main() {
                                 // --- CHANGED: Updated text to match new metrics ---
                                 std::cout << "\n==== Mood Momentum ====\n"
                                 << "1. Combined Triad Analysis (14-day)\n"
-                                << "2. Stress Trends Only (TBA)\n"
-                                << "3. Energy Trends Only (TBA)\n"
                                 << "4. Back\n";
                                 
                                 std::cout << "Enter choice: ";
@@ -177,7 +175,6 @@ int main() {
                         }
                         case 4: // TBA
                             controller.onViewCorrelationReport();
-                            std::cout << "\nFeature coming soon!\n";
                             break;
                         case 5: {
                             isAnalyticsMenuActive = false;
@@ -188,7 +185,6 @@ int main() {
                             break;
                     }
                 }
-                // --- BUG FIX: Added missing break to prevent the app from closing! ---
                 break;
             }
             case 4: {

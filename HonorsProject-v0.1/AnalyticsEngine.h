@@ -37,6 +37,8 @@ public:
         double energySleep;
         double energyStress;
         double sleepStress;
+        double sensitivity;
+        double baseline;
     };
     float getAverageStress(const std::vector<MoodEntry>& entries) const;
     float getAverageEnergy(const std::vector<MoodEntry>& entries) const;
@@ -45,6 +47,6 @@ public:
     std::vector<TriggerAnalysis> getTriggerInsights(const std::vector<MoodEntry>& entries);
     MoodAnalysis periodComparison(const std::vector<MomentumPoint>& points);
     CorrelationMetrics correlationLink(const std::vector<MoodEntry> &entries);
-    void extractData(const std::vector<MoodEntry>& entries, alglib::real_1d_array &outPile, Mode mode);
+    void extractCorrelationData(const std::vector<MoodEntry>& entries, alglib::real_1d_array &outPile, Mode mode);
     std::string getInsight(double r, std::string varA, std::string varB);
 };

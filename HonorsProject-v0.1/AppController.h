@@ -7,6 +7,8 @@ class AppController {
 private:
     DatabaseManager& db;
     AnalyticsEngine& analytics;
+    std::string toPct(double val);
+    std::string getTypeLabel(double val);
 public:
     AppController(DatabaseManager& dbInstance, AnalyticsEngine& analytics);
     
@@ -19,5 +21,8 @@ public:
     
     void onMostFrequentTrigger(int option);
     void onViewMoodTrends();
+    void onViewCorrelationReport();
+    void printSensitivityBlock(double sensitivity);
+    void printCorrelationLegend();
     std::string getProgressBar(float value, int maxScale = 10) const;
 };
