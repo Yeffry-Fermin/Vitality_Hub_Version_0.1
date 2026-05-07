@@ -25,7 +25,6 @@ void AppController::onAddMoodEntry() {
     std::cout << "----------------\n";
     std::cout << "VITALITY SYSTEM CHECK-IN\n";
     
-    // 1. THE ANCHOR: Start with the activity to set the context
     std::string triggers;
     // Clear the buffer once at the start to ensure getline works
     std::cin.ignore(std::numeric_limits<std::streamsize>::max(), '\n');
@@ -37,14 +36,15 @@ void AppController::onAddMoodEntry() {
     
     std::vector<std::string> parsedTriggers = MoodEntry::parseTriggers(triggers);
     
-    int energyLevel = getValidInt("Current 'Battery' level? (1 = Exhausted, 5 = Full): ", 1, 5);
+    int energyLevel = getValidInt("Current 'Energy' level? (1 = Exhausted, 5 = Full): ", 1, 5);
     
-    int stressLevel = getValidInt("Current 'System Load' or stress? (1 = Light, 5 = Heavy): ", 1, 5);
+    int stressLevel = getValidInt("Current 'Load' or stress? (1 = Light, 5 = Heavy): ", 1, 5);
     
     double sleepHours = getValidDouble("Recovery Check: How many hours of sleep did you get last night?: ", 0.0, 24.0);
     
     std::cout << "Any quick notes about this specific event? (Press Enter to skip): ";
     std::string note;
+    std::cin.ignore(std::numeric_limits<std::streamsize>::max(), '\n');
     getline(std::cin, note);
     
     std::cout <<"---------------------------\n";
@@ -125,55 +125,73 @@ void AppController::onViewAverages(int option) {
 void AppController::onMostFrequentTrigger(int option) {
     std::vector<MoodEntry> entries = db.getEntries(option);
     std::vector<AnalyticsEngine::TriggerAnalysis> insights = analytics.getTriggerInsights(entries);
-    
+
     std::cout << "\n========================================\n";
     std::cout << "         VITALITY PATTERN FINDER          ";
     std::cout << "\n========================================\n";
-    
+
     if (insights.empty()) {
         std::cout << " No data patterns identified yet. Keep logging!" << std::endl;
         std::cout << "========================================\n";
         return;
     }
-    
     // Sort by frequency so the most common activity is first
+    // 3rd param lambda function to tell it how to order the values a first b second
     std::sort(insights.begin(), insights.end(), [](const auto& a, const auto& b) {
         return a.frequency > b.frequency;
     });
     
+    //here i can easily get the 2nd most common and 3rd most common
     const auto& top = insights[0];
-    
+
+    // Create readable time label
+    std::string timeLabel;
+
+    if (option == 0) {
+        timeLabel = "All Time";
+    } else {
+        timeLabel = std::to_string(option) + " days";
+    }
+
     std::cout << "Top Pattern Identified: \"" << top.trigger << "\"\n";
     std::cout << "----------------------------------------\n";
-    std::cout << " Frequency:      " << top.frequency << " times (" << option << " days)\n";
-    
+
+    std::cout << " Frequency:      "
+              << top.frequency
+              << " times ("
+              << timeLabel
+              << ")\n";
+
     std::cout << std::fixed << std::setprecision(1);
-    
-    // ELEMENT 1: The Baseline Comparison
-    // We show the specific average next to the global 'Normal'
-    std::cout << " Avg. Battery:   " << top.avgEnergy << " (Normal: " << top.globalEnergy << ")\n";
+
+    std::cout << " Avg. Battery:   " << top.avgEnergy
+              << " (Normal: " << top.globalEnergy << ")\n";
+
     std::cout << " Avg. Load:      " << top.avgStress << " / 5\n";
     std::cout << " Avg. Sleep:     " << top.avgSleep << " hours\n\n";
-    
-    // ELEMENT 2: The "Why" Insight (Analysis)
+
     std::cout << "ANALYSIS: ";
+
     if (top.globalSleep > 0) {
-        // Calculate the percentage difference for the UI
-        float sleepDiff = ((top.avgSleep - top.globalSleep) / top.globalSleep) * 100.0f;
-        
+        float sleepDiff =
+        ((top.avgSleep - top.globalSleep) / top.globalSleep) * 100.0f;
+
         if (sleepDiff <= -10.0f) {
-            std::cout << "Note: Your sleep is " << std::abs(sleepDiff) << "% below your baseline.\n";
-            std::cout << "This is likely driving the battery drain for this activity.\n";
+            std::cout << "Your sleep is "
+                      << std::abs(sleepDiff)
+                      << "% below your baseline. "
+                      << "This may be increasing fatigue during this activity.\n";
         } else {
-            std::cout << " - Note: Sleep is stable. The drain is likely purely load-based.\n";
+            std::cout << "Sleep levels are stable. "
+                      << "The stress impact appears more activity-related.\n";
         }
     }
-    
-    // ELEMENT 3: The Diagnosis and Call to Action
+
+    // ELEMENT 3: Diagnosis + Action
     std::cout << "\nDIAGNOSIS: " << top.diagnosis << "\n";
     std::cout << "ACTION: " << top.advice << "\n";
+
     std::cout << "========================================\n\n";
-    
 }
 void AppController::onViewMoodTrends() {
     std::vector<MomentumPoint> points = db.getMoodMomentum();
@@ -265,66 +283,72 @@ std::string AppController::getProgressBar(float value, int maxScale) const {
 void AppController::onViewCorrelationReport() {
     const int colL = 25;
     const int colI = 15;
-    
-    // Get all the data to display on the report
+
+    // Load data
     std::vector<MoodEntry> entries = db.getEntries(0);
     auto metrics = analytics.correlationLink(entries);
-    // For now we only display a small correlation report with Energy and sleep
-    std::string energySleepReport = analytics.getInsight(metrics.energySleep, "Energy", "Sleep");
-    
-    
-    // UI Output
+
+    std::string energySleepReport =
+        analytics.getInsight(metrics.energySleep, "Energy", "Sleep");
+
+    // UI Header
     std::cout << "\n================================================\n";
-    std::cout << "             SYSTEM LINKAGE REPORT\n";
+    std::cout << "             BEHAVIOR PATTERN REPORT\n";
     std::cout << "================================================\n";
-    std::cout << "ANALYZING RESOURCE DEPENDENCIES...\n\n";
-    
-    // Table Headers
-    std::cout << std::left << std::setw(colL) << "[ Correlation ]"
-    << std::setw(colI) << "[ Impact ]"
-    << "[ TYPE ]" << "\n";
+    std::cout << "ANALYZING RELATIONSHIPS IN YOUR DATA...\n\n";
+
+    // Table header
+    std::cout << std::left << std::setw(colL) << "[ Relationship ]"
+              << std::setw(colI) << "[ Correlation ]"
+              << "[ TYPE ]\n";
+
     std::cout << "------------------------------------------------\n";
-    
-    // Data Rows
-    std::cout << std::left << std::setw(colL) << "Sleep  -> Energy"
-    << "|    " << std::setw(8) << toPct(metrics.energySleep)
-    << "|  " << getTypeLabel(metrics.energySleep) << "\n";
-    
+
+    // Rows
+    std::cout << std::left << std::setw(colL) << "Sleep -> Energy"
+              << "|    " << std::setw(8) << std::fixed<< std::setprecision(2) << metrics.energySleep
+              << "|  " << getTypeLabel(metrics.energySleep) << "\n";
+
     std::cout << std::left << std::setw(colL) << "Stress -> Energy"
-    << "|    " << std::setw(8) << toPct(metrics.energyStress)
-    << "|  " << getTypeLabel(metrics.energyStress) << "\n";
-    
-    std::cout << std::left << std::setw(colL) << "Sleep  -> Stress"
-    << "|    " << std::setw(8) << toPct(metrics.sleepStress)
-    << "|  " << getTypeLabel(metrics.sleepStress) << "\n";
-    
-    std::cout << "================================================\n" << std::endl;
-    
-    
-    // 1. Start with the first one as the baseline "Winner"
-    double winnerR = metrics.energySleep;
+              << "|    " << std::setw(8) << std::fixed<< std::setprecision(2) << metrics.energyStress
+              << "|  " << getTypeLabel(metrics.energyStress) << "\n";
+
+    std::cout << std::left << std::setw(colL) << "Sleep -> Stress"
+              << "|    " << std::setw(8) << std::fixed<< std::setprecision(2) << metrics.sleepStress
+              << "|  " << getTypeLabel(metrics.sleepStress) << "\n";
+
+    std::cout << "================================================\n\n";
+
+    // Find strongest relationship
+    double strongestR = metrics.energySleep;
     std::string var1 = "Energy";
     std::string var2 = "Sleep";
-    
-    // 2. Challenge with Stress -> Energy
-    if (std::abs(metrics.energyStress) > std::abs(winnerR)) {
-        winnerR = metrics.energyStress;
+
+    if (std::abs(metrics.energyStress) > std::abs(strongestR)) {
+        strongestR = metrics.energyStress;
         var1 = "Energy";
         var2 = "Stress";
     }
-    
-    // 3. Challenge with Sleep -> Stress
-    if (std::abs(metrics.sleepStress) > std::abs(winnerR)) {
-        winnerR = metrics.sleepStress;
+
+    if (std::abs(metrics.sleepStress) > std::abs(strongestR)) {
+        strongestR = metrics.sleepStress;
         var1 = "Sleep";
         var2 = "Stress";
     }
-    
-    // 4. One final call to print the "Deep Dive"
-    std::cout << analytics.getInsight(winnerR, var1, var2) << std::endl;
+
+    std::cout << "KEY INSIGHT:\n";
+    std::cout << "The strongest relationship in your data is between "
+              << var1 << " and " << var2 << ".\n";
+
+    std::cout << "This suggests that changes in "
+              << var1 << " tend to influence "
+              << var2 << " over time in a consistent pattern.\n\n";
+
+    std::cout << "DETAILED ANALYSIS:\n";
+    std::cout << analytics.getInsight(strongestR, var1, var2) << "\n";
+
     printCorrelationLegend();
 }
-
 std::string AppController::toPct(double val) {
     // Multiply by 100 and cast to int to remove decimals
     int percentage = (int)(val * 100);
@@ -336,16 +360,16 @@ std::string AppController::getTypeLabel(double val) {
     
     // 1. If it's too small, it's effectively "No Correlation"
     if (strength < 0.3) {
-        return "No Correlation";
+        return "None";
     }
     
     // 2. If it's positive and strong enough
     if (val > 0) {
-        return "Positive Corr."; // Shortened to fit the table width
+        return "Positive"; // Shortened to fit the table width
     }
     
     // 3. If it's negative and strong enough
-    return "Negative Corr.";
+    return "Negative";
 }
 
 void AppController::printSensitivityBlock(double sensitivity) {
@@ -372,15 +396,15 @@ void AppController::printSensitivityBlock(double sensitivity) {
 
 void AppController::printCorrelationLegend() {
     std::cout << "\n------------------------------------------------\n";
-    std::cout << "[ HOW TO READ THIS REPORT ]\n";
+    std::cout << "HOW TO READ THIS\n";
     std::cout << "------------------------------------------------\n";
-    std::cout << "(+) Positive Corr: Variables move in the SAME direction.\n";
-    std::cout << "    Example: As Sleep goes UP, Energy goes UP.\n\n";
+    std::cout << "Positive relationship: both variables move together\n";
+    std::cout << "Example: more sleep -> higher energy\n\n";
     
-    std::cout << "(-) Negative Corr: Variables move in OPPOSITE directions.\n";
-    std::cout << "    Example: As Stress goes UP, Energy goes DOWN.\n\n";
+    std::cout << "Negative relationship: variables move in opposite directions\n";
+    std::cout << "Example: more stress -> lower energy\n\n";
     
-    std::cout << "(%) Impact Strength: Shows how consistent the link is.\n";
-    std::cout << "    Higher % = A more predictable relationship.\n";
-    std::cout << "------------------------------------------------\n";
+    std::cout << "Correlation strength (r):\n";
+    std::cout << "Closer to 1 or -1 = stronger relationship\n";
+    std::cout << "Closer to 0 = weaker relationship\n";
 }

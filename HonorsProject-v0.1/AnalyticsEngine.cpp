@@ -177,38 +177,37 @@ std::vector<AnalyticsEngine::TriggerAnalysis> AnalyticsEngine::getTriggerInsight
         
         if (insight.frequency >= 3) { // 3+ is required to notice a trend
 
-            // Calculate percentage difference: ((New - Old) / Old) * 100
             float sleepDiff = 0.0f;
             if (globalSleep > 0) {
                 sleepDiff = ((insight.avgSleep - globalSleep) / globalSleep) * 100.0f;
             }
             
             if (energyImpact <= -1.0f && insight.avgStress >= 3.5f) {
-                insight.diagnosis = "CRITICAL STRAIN";
-                insight.advice = "Action: High load detected. Schedule a 'Power Source' activity (like Gym) after this.";
+                insight.diagnosis = "HIGH STRAIN";
+                insight.advice = "This activity consistently drains your energy during high-stress periods. Try pairing it with recovery time afterward.";
             }
             else if (energyImpact >= 1.0f) {
-                insight.diagnosis = "HIGH EFFICIENCY";
-                insight.advice = "Action: This is a recharge point. Protect this time in your schedule.";
+                insight.diagnosis = "POSITIVE RECOVERY";
+                insight.advice = "This activity appears to improve your energy and overall balance. Consider making it part of your regular routine.";
             }
             else if (energyImpact <= -0.8f) {
-                insight.diagnosis = "RESOURCE DRAIN";
+                insight.diagnosis = "ENERGY DRAIN";
                 
-                // Tailor advice based on the sleep analysis
                 if (sleepDiff <= -10.0f) {
-                    insight.advice = "Action: Sleep deficit detected. Prioritize recovery over extra work hours.";
+                    insight.advice = "Poor sleep may be amplifying the impact of this activity. Prioritize recovery when possible.";
                 } else {
-                    insight.advice = "Action: Battery leak detected. Review if this activity can be optimized.";
+                    insight.advice = "This activity may be contributing to fatigue over time. Monitor how often it appears during stressful periods.";
                 }
             }
             else {
-                insight.diagnosis = "STABLE FLOW";
-                insight.advice = "Action: Sustainable rhythm. Keep maintaining current recovery habits.";
+                insight.diagnosis = "STABLE PATTERN";
+                insight.advice = "This activity appears relatively balanced and manageable within your current routine.";
             }
-        } else {
-            insight.diagnosis = "INSUFFICIENT DATA";
-            insight.advice = "Action: Log at least 3 occurrences to unlock diagnostic insights.";
-        }
+            }
+            else {
+                insight.diagnosis = "INSUFFICIENT DATA";
+                insight.advice = "Log this activity a few more times to generate more accurate insights.";
+            }
         
         insights.push_back(insight);
     }
