@@ -7,7 +7,7 @@ The system is designed to move beyond simple logging by analyzing relationships 
 
 ---
 
-## 🚀 Key Features
+## Key Features
 
 - **Mood Data Logging (SQLite Database)**
   - Stores stress, energy, sleep, notes, and activity triggers
@@ -37,7 +37,7 @@ The system is designed to move beyond simple logging by analyzing relationships 
 
 ---
 
-## 🛠️ Technical Architecture
+## Technical Architecture
 
 The project is built using Object-Oriented Programming (OOP) principles and layered system design:
 
@@ -90,7 +90,7 @@ Instead of treating mood as abstract or emotional noise, the system:
 
 ---
 
-## ⚙️ Requirements
+## Requirements
 
 - C++17 or higher
 - SQLite3
@@ -98,7 +98,7 @@ Instead of treating mood as abstract or emotional noise, the system:
 
 ---
 
-## 📂 Build & Run
+## Build & Run
 
 ```bash
 mkdir build
