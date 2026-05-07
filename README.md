@@ -1,54 +1,108 @@
-# Vitality Hub
-### *Turning "Inner Noise" into Actionable Data*
+# Vitality Hub  
+### *Turning Behavioral Data into Predictive Insight*
 
-**Vitality Hub** is a C++ application designed to bridge the gap between subjective emotional states and objective data analysis. It is a specialized tool for high-performance individuals—specifically those balancing academic rigor in Computer Science and intensive caregiving responsibilities—to track and manage chronic stress and anxiety.
+**Vitality Hub** is a C++ analytics application that tracks mood-related data (stress, energy, sleep, and activities) and transforms it into structured insights using statistical analysis, correlation modeling, and trend detection.
 
----
-
-## 💡 The Mission
-
-This solution was born from a personal need to turn **"inner noise" into actionable data.** After five years of managing chronic anxiety, I realized that many existing tools felt generic and lacked the depth needed for meaningful reflection. 
-
-Following clinical advice that **stress-awareness is a prerequisite for recovery**, I developed this application to help me identify patterns in my own life. It is a tool designed by a user, for a user, to turn the abstract feeling of anxiety into understandable insights. By translating my internal state into objective data, I am shifting from being a passive observer of my anxiety to being the **architect of my own recovery.** This application is my way of using the logic of Computer Science to find clarity in the chaos of chronic stress.
+The system is designed to move beyond simple logging by analyzing relationships between behaviors and internal states, helping users understand how daily actions influence overall performance and well-being.
 
 ---
 
-## 🚀 Key Features
+## Key Features
 
-* **Quantitative Mood Logging:** Capture stress and anxiety levels on a 1–10 scale.
-* **Trigger Tagging:** Associate entries with specific stressors (e.g., "exams," "commute," "caregiving") using a multi-tag system.
-* **Trend Analysis Engine:** * Calculates total average stress and anxiety scores.
-    * Implements a "Sliding Window" to view 7-day and 30-day averages.
-    * Calculates a **Weighted Vitality Score** to provide a single metric for overall wellness.
-* **Frequency Tracking:** Identifies recurring triggers to highlight the most persistent sources of anxiety.
-* **Data Persistence:** A robust CSV-based file manager that ensures logs are saved and retrieved across sessions.
+- **Mood Data Logging (SQLite Database)**
+  - Stores stress, energy, sleep, notes, and activity triggers
+  - Persistent storage using SQL-based database system
+
+- **Trigger-Based Behavior Tracking**
+  - Associates moods with user-defined activities (e.g., “exam”, “gym”, “work”)
+  - Groups entries by behavior to identify patterns
+
+- **Statistical Analysis Engine**
+  - Computes averages for stress, energy, and sleep
+  - 14-day trend comparison (weekly performance shifts)
+  - Rolling performance momentum tracking
+
+- **Correlation Analysis System**
+  - Measures relationships between variables using Pearson correlation
+  - Energy ↔ Sleep, Energy ↔ Stress, Sleep ↔ Stress
+  - Identifies primary behavioral drivers
+
+- **Insight Generation Engine**
+  - Converts statistical outputs into human-readable system reports
+  - Classifies system state (e.g., overload, stability, peak performance)
+
+- **Report System (OOP Architecture)**
+  - Uses inheritance-based `Report` system for structured output formatting
+  - Separates analysis logic from presentation layer
 
 ---
 
-## 🛠️ Technical Architecture
+## Technical Architecture
 
-The project is built using **Object-Oriented Programming (OOP)** principles to ensure the code is modular and easy to maintain.
+The project is built using Object-Oriented Programming (OOP) principles and layered system design:
 
-* **`MoodEntry` Class:** The core data structure holding stress levels, anxiety levels, a vector of trigger tags, and a timestamp.
-* **`FileManager` Class:** Handles the serialization and deserialization of data, moving objects between the application and the `mood_log.csv` file.
-* **`TrendAnalyzer` Class:** The logic engine that performs statistical calculations and frequency analysis on the stored data.
+- **`MoodEntry` Class**
+  - Core data model representing a single user log entry
+  - Stores stress, energy, sleep, triggers, notes, and timestamps
 
-### Data Format
-The application utilizes a flat-file CSV structure for storage:
-`[Stress],[Anxiety],[Trigger|Tags],[Timestamp]`
+- **`DatabaseManager` Class**
+  - Handles SQLite database operations
+  - Responsible for inserting and retrieving mood data using SQL queries
+
+- **`AnalyticsEngine` Class**
+  - Core computation layer for statistical analysis
+  - Implements averages, correlation analysis, and trend detection
+  - Generates system insights based on computed metrics
+
+- **`Report` System (Inheritance)**
+  - Base `Report` class defines shared structure (headers/footers)
+  - Derived report classes implement specific analytics views
+
+- **`AppController` Class**
+  - Handles user interaction and application flow
+  - Connects UI input with analytics and database layers
 
 ---
 
-## 📂 Installation & Usage
+## Data Model
 
-### Prerequisites
-* A C++17 compatible compiler (GCC, Clang, or MSVC).
+Each mood entry contains:
 
-### Setup
-1. Clone the repository to your local machine.
-2. Navigate to the project directory.
-3. Build the project using CMake:
-   ```bash
-   mkdir build && cd build
-   cmake ..
-   make
+- Stress Level (1–5)
+- Energy Level (1–5)
+- Sleep Hours (0–24)
+- Activity Triggers (tags)
+- Optional Notes
+- Timestamp
+
+Stored using a structured SQLite schema for persistent analysis.
+
+---
+
+## Core Design Philosophy
+
+Vitality Hub is built around the idea that behavioral patterns can be quantified and analyzed like a system.
+
+Instead of treating mood as abstract or emotional noise, the system:
+- Converts it into measurable variables
+- Finds relationships between those variables
+- Uses those relationships to generate actionable insight
+
+---
+
+## Requirements
+
+- C++17 or higher
+- SQLite3
+- CMake (for build system)
+
+---
+
+## Build & Run
+
+```bash
+mkdir build
+cd build
+cmake ..
+make
+./VitalityHub
