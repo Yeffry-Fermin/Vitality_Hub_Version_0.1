@@ -1,6 +1,6 @@
 #include "DatabaseManager.h"
 #include "MoodEntry.h"
-#include <sqlite3.h>
+#include "./external/sqlite/sqlite3.h"
 #include <iostream>
 
 // 0. Constructor to setup the tables

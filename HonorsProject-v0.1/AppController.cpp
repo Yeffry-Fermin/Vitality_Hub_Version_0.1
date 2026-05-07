@@ -174,22 +174,6 @@ void AppController::onMostFrequentTrigger(int option) {
     std::cout << "ACTION: " << top.advice << "\n";
     std::cout << "========================================\n\n";
     
-    // Runners up (showing up to 3 other notable patterns)
-    if (insights.size() > 1) {
-        std::cout << "OTHER NOTABLE PATTERNS:\n\n";
-        for (size_t i = 1; i < insights.size() && i < 4; ++i) {
-            const auto& other = insights[i];
-            
-            // Impact label based on the Delta we calculated in the Engine
-            float delta = other.avgEnergy - other.globalEnergy;
-            std::string impactLabel = (delta >= 0.5f) ? " POWER SOURCE" : " RESOURCE DRAIN";
-            
-            std::cout << "Trigger: \"" << other.trigger << "\"\n";
-            std::cout << "Impact:  " << impactLabel << " (" << (delta > 0 ? "+" : "") << delta << " Energy)\n";
-            std::cout << "Stats:   Load " << other.avgStress << " | Battery " << other.avgEnergy << "\n";
-            std::cout << "----------------------------------------\n";
-        }
-    }
 }
 void AppController::onViewMoodTrends() {
     std::vector<MomentumPoint> points = db.getMoodMomentum();

@@ -293,34 +293,31 @@ std::string AnalyticsEngine::getInsight(double cRating, std::string varA, std::s
 
     if (cRating >= 0.7) {
         return "System Report: The data identifies a Strong Positive correlation (r = " + r_clean + ") "
-        "between " + varA + " and " + varB + ". Statistically, this indicates that " + varA +
-        " acts as a primary driver for " + varB + " levels within the observed period. "
-        "From an optimization standpoint, " + varA + " should be prioritized as a key metric "
-        "for improving overall system stability.";
+        "between " + varA + " and " + varB + ". In practice, higher " + varA +
+        " levels are consistently associated with higher " + varB + " levels. "
+        "This suggests these metrics tend to improve together over time.";
     }
     else if (cRating >= 0.3) {
         return "System Report: The data identifies a Moderate Positive correlation (r = " + r_clean + ") "
-        "between " + varA + " and " + varB + ". This suggests a visible trend where " + varA +
-        " influences " + varB + " levels, though secondary environmental or behavioral "
-        "factors likely contribute to the remaining variance.";
+        "between " + varA + " and " + varB + ". The data shows a noticeable trend where increases in "
+        + varA + " are often linked with increases in " + varB + ". "
+        "While the relationship is not perfect, the connection is still meaningful.";
     }
     else if (cRating > -0.3) {
         return "System Report: The data suggests a Weak or Negligible relationship (r = " + r_clean + ") "
-        "between " + varA + " and " + varB + ". Statistically, these metrics appear to operate "
-        "independently within the current dataset; changes in " + varA + " do not reliably "
-        "predict shifts in " + varB + " at this time.";
+        "between " + varA + " and " + varB + ". Changes in " + varA +
+        " do not consistently predict changes in " + varB + " within the current dataset.";
     }
     else if (cRating <= -0.7) {
         return "System Report: The data identifies a Strong Negative correlation (r = " + r_clean + ") "
-        "between " + varA + " and " + varB + ". Statistically, this indicates an inverse relationship "
-        "where " + varA + " acts as a primary systemic drain on " + varB + " levels. "
-        "From an optimization standpoint, " + varA + " should be identified as a critical factor "
-        "for mitigation to prevent the further destabilization of " + varB + ".";
+        "between " + varA + " and " + varB + ". In practice, higher " + varA +
+        " levels are consistently associated with lower " + varB + " levels. "
+        "This suggests that improvements in one area may help stabilize the other.";
     }
     else {
         return "System Report: The data identifies a Moderate Negative correlation (r = " + r_clean + ") "
-        "between " + varA + " and " + varB + ". This indicates an inverse relationship "
-        "where " + varA + " exerts moderate downward pressure on " + varB + " levels, "
-        "suggesting that increases in " + varA + " may partially inhibit " + varB + " stability.";
+        "between " + varA + " and " + varB + ". The data suggests that increases in "
+        + varA + " are often linked with decreases in " + varB + ". "
+        "The relationship appears noticeable, though not strongly consistent.";
     }
 }

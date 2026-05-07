@@ -152,7 +152,6 @@ int main() {
                             bool isMoodTrendsActive = true;
                             int moodChoiceInput;
                             while(isMoodTrendsActive) {
-                                // --- CHANGED: Updated text to match new metrics ---
                                 std::cout << "\n==== Mood Momentum ====\n"
                                 << "1. Combined Triad Analysis (14-day)\n"
                                 << "4. Back\n";

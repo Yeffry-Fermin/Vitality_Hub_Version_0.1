@@ -1,5 +1,5 @@
 #pragma once
-#include <sqlite3.h>
+#include "./external/sqlite/sqlite3.h"
 #include <vector>
 #include <string>
 #include "MoodEntry.h"

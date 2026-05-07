@@ -6,10 +6,6 @@
 	objectVersion = 77;
 	objects = {
 
-/* Begin PBXBuildFile section */
-		782B9D772F9117AC00C3D824 /* libsqlite3.tbd in Frameworks */ = {isa = PBXBuildFile; fileRef = 782B9D762F9117AC00C3D824 /* libsqlite3.tbd */; };
-/* End PBXBuildFile section */
-
 /* Begin PBXCopyFilesBuildPhase section */
 		782B9CB82F894A6700C3D824 /* CopyFiles */ = {
 			isa = PBXCopyFilesBuildPhase;
@@ -40,7 +36,6 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				782B9D772F9117AC00C3D824 /* libsqlite3.tbd in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
