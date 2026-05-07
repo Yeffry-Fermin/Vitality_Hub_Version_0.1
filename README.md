@@ -100,9 +100,21 @@ Instead of treating mood as abstract or emotional noise, the system:
 
 ## Build & Run
 
-```bash
-mkdir build
-cd build
-cmake ..
+1. Clone the repository
+   git clone https://github.com/Yeffry-Fermin/Vitality_Hub_Version_0.1
+
+2. Enter project directory
+   cd Vitality_Hub_Version_0.1
+
+3. Build the project
+
+   Using CMake:
+   mkdir build
+   cd build
+   cmake ..
+   cmake --build .
+
+4. Run the application
+   ./VitalityHub   (or the generated executable)
 make
 ./VitalityHub
