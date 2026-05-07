@@ -40,40 +40,51 @@ float AnalyticsEngine::getAverageSleep(const std::vector<MoodEntry>& entries) co
 }
 
 std::string AnalyticsEngine::getVitalityAdvice(double stress, double energy, double sleep) const {
+    // Difference between stress and energy
+    // Positive = stress is higher than energy
+    // Negative = energy is higher than stress
     double gap = stress - energy;
+    
     std::string message = "";
     
-    // ZONE 1: CRITICAL OVERLOAD (Stress is much higher than Energy)
+    // Stress is significantly higher than energy (strong imbalance / overload)
     if (gap >= 2.0) {
+        
+        // Low sleep makes recovery worse
         if (sleep < 7.0) {
             message = "SYSTEM OVERLOAD: Your stress is high and your battery is empty. "
             "With low sleep, your foundation is weak. Rest is mandatory.";
-        } else {
-            message = "HIGH STRAIN: You're well-rested, but your current workload is "
-            "outpacing your energy. Consider dropping a non-essential task.";
+        }
+        // Sleep is fine, but stress is still too high relative to energy
+        else {
+            message = "HIGH STRAIN: You're well-rested, but your workload is "
+            "outpacing your energy. Consider reducing workload.";
         }
     }
-    // ZONE 2: MODERATE STRAIN (Stress is slightly higher than Energy)
+    // Stress is moderately higher than energy
     else if (gap >= 0.5) {
+        
+        // Low sleep increases risk of burnout
         if (sleep < 7.0) {
-            message = "WARNING: You're pushing through on low sleep. The gap is widening; "
-            "try to catch up on rest tonight to avoid burnout.";
-        } else {
-            message = "STEADY EFFORT: You're managing a heavy load. You have the sleep "
-            "foundation to handle this, but keep an eye on your energy levels.";
+            message = "WARNING: Low sleep combined with rising stress. "
+            "You should prioritize recovery.";
+        }
+        // Sleep is stable, system is under manageable pressure
+        else {
+            message = "STEADY LOAD: You're handling a moderate workload. "
+            "Monitor energy levels to avoid fatigue.";
         }
     }
-    // ZONE 3: SUSTAINABLE BALANCE (Energy and Stress are roughly equal)
+    // Energy and stress are roughly balanced
     else if (gap >= -1.0) {
-        message = "STABLE: You're in a great rhythm. Your energy and stress are well-balanced. "
-        "This is a sustainable pace for long-term productivity.";
+        message = "STABLE: Energy and stress are balanced. "
+        "This is a sustainable performance level.";
     }
-    // ZONE 4: PEAK CAPACITY (Energy is significantly higher than Stress)
+    // Energy is higher than stress (good recovery / high capacity state)
     else {
-        message = "PEAK CAPACITY: You have a massive energy surplus. This is the perfect "
-        "time to tackle your hardest project or a difficult study session.";
+        message = "HIGH ENERGY STATE: Energy is higher than stress. "
+        "Good time for demanding tasks or productivity.";
     }
-    
     return message;
 }
 

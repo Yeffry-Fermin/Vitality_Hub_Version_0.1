@@ -12,6 +12,7 @@
 #include "AppController.h"
 #include "DatabaseManager.h"
 #include "AnalyticsEngine.h"
+#include "AverageReport.h"
 
 // Updated constructor to handle both dependencies
 AppController::AppController(DatabaseManager& dbInstance, AnalyticsEngine& analyticsInstance)
@@ -50,9 +51,16 @@ void AppController::onAddMoodEntry() {
     
     // Save the entry with the updated 1-5 scales
     MoodEntry newEntry(stressLevel, energyLevel, sleepHours, note, parsedTriggers);
-    db.createEntry(newEntry);
     
-    std::cout << "Log successful. Vitality data synchronized.\n";
+    try {
+        db.createEntry(newEntry);
+        std::cout << "Log successful. Vitality data synchronized.\n";
+    }
+    catch (const std::exception& e) {
+        std::cerr << "Error: " << e.what() << std::endl;
+        std::cout << "Failed to save entry. Please try again.\n";
+    }
+    
 }
 // Showcase of your logs
 void AppController::onViewHistory() {
@@ -92,7 +100,9 @@ void AppController::onViewHistory() {
     }
 }
 
+
 void AppController::onViewAverages(int option) {
+    
     std::vector<MoodEntry> entries = db.getEntries(option);
     
     if(entries.empty()) {
@@ -104,26 +114,13 @@ void AppController::onViewAverages(int option) {
     float avgEnergy = analytics.getAverageEnergy(entries);
     float avgSleep = analytics.getAverageSleep(entries);
     
-    std::cout << "\n================================" << std::endl;
-    std::cout << "   MOOD REPORT (Last " << option << " Days)" << std::endl;
-    std::cout << "================================" << std::endl;
+    std::string statusMessage = analytics.getVitalityAdvice(avgStress,avgEnergy,avgSleep);
     
-    std::cout << "Stress:  " << getProgressBar(avgStress, 5) << " " << std::fixed
-    << std::setprecision(1) << avgStress << "/5" << std::endl;
+    AverageReport report(avgStress,avgEnergy,avgSleep,statusMessage);
     
-    std::cout << "Energy:  " << getProgressBar(avgEnergy, 5) << " " << std::fixed
-    << std::setprecision(1) << avgEnergy << "/5" << std::endl;
-    
-    // Sleep gets a special printout since it isn't a strict "score"
-    std::cout << "Sleep:   [  " << std::fixed << std::setprecision(1) << avgSleep << " Hours Average  ]" << std::endl;
-    std::cout << "================================" << std::endl;
-    
-    // 1. Ask the engine for the insight
-    std::string statusMessage = analytics.getVitalityAdvice(avgStress, avgEnergy, avgSleep);
-    
-    // 2. Print it to the screen
-    std::cout << "\nINSIGHT: " << statusMessage << std::endl;
+    report.generate();
 }
+
 
 void AppController::onMostFrequentTrigger(int option) {
     std::vector<MoodEntry> entries = db.getEntries(option);
@@ -324,21 +321,21 @@ void AppController::onViewCorrelationReport() {
     double winnerR = metrics.energySleep;
     std::string var1 = "Energy";
     std::string var2 = "Sleep";
-
+    
     // 2. Challenge with Stress -> Energy
     if (std::abs(metrics.energyStress) > std::abs(winnerR)) {
         winnerR = metrics.energyStress;
         var1 = "Energy";
         var2 = "Stress";
     }
-
+    
     // 3. Challenge with Sleep -> Stress
     if (std::abs(metrics.sleepStress) > std::abs(winnerR)) {
         winnerR = metrics.sleepStress;
         var1 = "Sleep";
         var2 = "Stress";
     }
-
+    
     // 4. One final call to print the "Deep Dive"
     std::cout << analytics.getInsight(winnerR, var1, var2) << std::endl;
     printCorrelationLegend();
@@ -368,7 +365,7 @@ std::string AppController::getTypeLabel(double val) {
 }
 
 void AppController::printSensitivityBlock(double sensitivity) {
-    double absSens = std::abs(sensitivity); // sensitivity is essentially the slope 
+    double absSens = std::abs(sensitivity); // sensitivity is essentially the slope
     
     std::string level;
     if (absSens >= 0.7) {
@@ -391,15 +388,15 @@ void AppController::printSensitivityBlock(double sensitivity) {
 
 void AppController::printCorrelationLegend() {
     std::cout << "\n------------------------------------------------\n";
-        std::cout << "[ HOW TO READ THIS REPORT ]\n";
-        std::cout << "------------------------------------------------\n";
-        std::cout << "(+) Positive Corr: Variables move in the SAME direction.\n";
-        std::cout << "    Example: As Sleep goes UP, Energy goes UP.\n\n";
-        
-        std::cout << "(-) Negative Corr: Variables move in OPPOSITE directions.\n";
-        std::cout << "    Example: As Stress goes UP, Energy goes DOWN.\n\n";
-        
-        std::cout << "(%) Impact Strength: Shows how consistent the link is.\n";
-        std::cout << "    Higher % = A more predictable relationship.\n";
-        std::cout << "------------------------------------------------\n";
+    std::cout << "[ HOW TO READ THIS REPORT ]\n";
+    std::cout << "------------------------------------------------\n";
+    std::cout << "(+) Positive Corr: Variables move in the SAME direction.\n";
+    std::cout << "    Example: As Sleep goes UP, Energy goes UP.\n\n";
+    
+    std::cout << "(-) Negative Corr: Variables move in OPPOSITE directions.\n";
+    std::cout << "    Example: As Stress goes UP, Energy goes DOWN.\n\n";
+    
+    std::cout << "(%) Impact Strength: Shows how consistent the link is.\n";
+    std::cout << "    Higher % = A more predictable relationship.\n";
+    std::cout << "------------------------------------------------\n";
 }
