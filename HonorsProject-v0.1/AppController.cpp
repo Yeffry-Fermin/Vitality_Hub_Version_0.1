@@ -127,7 +127,7 @@ void AppController::onMostFrequentTrigger(int option) {
     std::vector<AnalyticsEngine::TriggerAnalysis> insights = analytics.getTriggerInsights(entries);
 
     std::cout << "\n========================================\n";
-    std::cout << "         VITALITY PATTERN FINDER          ";
+    std::cout << "             Pattern Finder                ";
     std::cout << "\n========================================\n";
 
     if (insights.empty()) {
@@ -173,8 +173,7 @@ void AppController::onMostFrequentTrigger(int option) {
     std::cout << "ANALYSIS: ";
 
     if (top.globalSleep > 0) {
-        float sleepDiff =
-        ((top.avgSleep - top.globalSleep) / top.globalSleep) * 100.0f;
+        float sleepDiff = ((top.avgSleep - top.globalSleep) / top.globalSleep) * 100.0f;
 
         if (sleepDiff <= -10.0f) {
             std::cout << "Your sleep is "
@@ -186,8 +185,23 @@ void AppController::onMostFrequentTrigger(int option) {
                       << "The stress impact appears more activity-related.\n";
         }
     }
+    // TOO MUCH INFO LETS LEAVE IT AT THAT FOR NOW UI I ADD THIS
+//    float energyDelta = top.avgEnergy - top.globalEnergy;
+//
+//    if (energyDelta <= -1.0f) {
+//        std::cout << "CRITICAL DRAIN: This activity pulls your battery "
+//                  << std::abs(energyDelta) << " points below your normal baseline.\n";
+//    }
+//    else if (energyDelta >= 1.0f) {
+//        std::cout << "RECOVERY BOOST: This activity increases your battery by "
+//                  << energyDelta << " points above your baseline.\n";
+//    }
+//    else {
+//        std::cout << "NEUTRAL IMPACT: Your battery levels remain stable during this activity.\n";
+//    }
+    
+    
 
-    // ELEMENT 3: Diagnosis + Action
     std::cout << "\nDIAGNOSIS: " << top.diagnosis << "\n";
     std::cout << "ACTION: " << top.advice << "\n";
 
@@ -195,6 +209,10 @@ void AppController::onMostFrequentTrigger(int option) {
 }
 void AppController::onViewMoodTrends() {
     std::vector<MomentumPoint> points = db.getMoodMomentum();
+    
+    std::cout << "\n========================================\n";
+    std::cout << "               Mood Momentum                ";
+    std::cout << "\n========================================\n";
     
     std::cout << std::left << std::setw(12) << "DATE" << " | [ STRESS ] | [ ENERGY ] | SLEEP\n";
     
@@ -216,22 +234,31 @@ void AppController::onViewMoodTrends() {
     
     auto dataAnalysis = analytics.periodComparison(points);
     
+    // --- STRESS TREND ---
     if (dataAnalysis.stressChange < 0) {
         std::cout << "\nSuccess: Your stress dropped " << std::fixed << std::setprecision(1) << -(dataAnalysis.stressChange) << "% compared to last week. \n";
     } else if (dataAnalysis.stressChange > 0) {
-        std::cout << "Notice: Your stress increased by " << std::fixed << std::setprecision(1) << dataAnalysis.stressChange << "% recently. \n";
+        std::cout << "\nNotice: Your stress increased by " << std::fixed << std::setprecision(1) << dataAnalysis.stressChange << "% recently. \n";
+    } else {
+        std::cout << "\nStability: Your stress levels have remained consistent with last week. \n";
     }
-    
+
+    // --- ENERGY TREND ---
     if (dataAnalysis.energyChange > 0) {
         std::cout << "Success: Your energy is up " << std::fixed << std::setprecision(1) << dataAnalysis.energyChange << "%! \n";
     } else if (dataAnalysis.energyChange < 0) {
         std::cout << "Warning: Your energy has dropped by " << std::fixed << std::setprecision(1) << -(dataAnalysis.energyChange) << "%. \n";
+    } else {
+        std::cout << "Stability: Your energy levels are maintaining a steady equilibrium. \n";
     }
-    
+
+    // --- SLEEP TREND ---
     if (dataAnalysis.sleepChange > 0) {
         std::cout << "Insight: You are sleeping " << std::fixed << std::setprecision(1) << dataAnalysis.sleepChange << "% more on average. \n";
     } else if (dataAnalysis.sleepChange < 0) {
         std::cout << "Insight: Your sleep is down " << std::fixed << std::setprecision(1) << -(dataAnalysis.sleepChange) << "% compared to last week. \n";
+    } else {
+        std::cout << "Insight: Your sleep schedule has remained perfectly stable. \n";
     }
 }
 
@@ -293,7 +320,7 @@ void AppController::onViewCorrelationReport() {
 
     // UI Header
     std::cout << "\n================================================\n";
-    std::cout << "             BEHAVIOR PATTERN REPORT\n";
+    std::cout << "             Behavior Pattern Report             \n";
     std::cout << "================================================\n";
     std::cout << "ANALYZING RELATIONSHIPS IN YOUR DATA...\n\n";
 
@@ -347,6 +374,28 @@ void AppController::onViewCorrelationReport() {
     std::cout << "DETAILED ANALYSIS:\n";
     std::cout << analytics.getInsight(strongestR, var1, var2) << "\n";
 
+    // --- MECHANICAL IMPACT ANALYSIS --- [Here we use the slope to identify the change that stress has to energy]
+    std::cout << "------------------------------------------------\n";
+    std::cout << "MECHANICAL IMPACT (System Sensitivity):\n";
+
+    // We use the absolute value because the 'cost' is the magnitude of the drop
+    double impactRate = std::abs(metrics.sensitivity);
+
+    std::cout << "The engine identifies a 'Stress-to-Energy Exchange Rate' of "
+              << std::fixed << std::setprecision(2) << impactRate << ".\n";
+
+    std::cout << "In practice: For every 1.0 point of Stress added to your system,\n";
+    std::cout << "you lose exactly " << impactRate << " points of Energy.\n";
+    
+    std::cout << "------------------------------------------------\n";
+
+    if (impactRate > 1.0) {
+        std::cout << "STATUS: High Sensitivity. Stress has an outsized impact on your battery.\n";
+    } else {
+        std::cout << "STATUS: High Resilience. Your system handles stress loads efficiently.\n";
+    }
+    std::cout << "------------------------------------------------\n";
+    
     printCorrelationLegend();
 }
 std::string AppController::toPct(double val) {

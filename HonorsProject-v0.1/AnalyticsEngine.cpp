@@ -90,49 +90,41 @@ std::string AnalyticsEngine::getVitalityAdvice(double stress, double energy, dou
 
 
 AnalyticsEngine::MoodAnalysis AnalyticsEngine::periodComparison(const std::vector<MomentumPoint> &points) {
-    // 1. Check if 14 days worth of data is passed
-    if (points.size() < 14) return {0.0f, 0.0f, 0.0f};
-    
-    auto split_it = points.begin() + 7;
-    std::vector<MomentumPoint> previous(split_it, points.end());
-    std::vector<MomentumPoint> current(points.begin(), split_it);
-    
-    // 2. Initialization
-    float totalPreviousStress = 0.0f, totalCurrentStress = 0.0f;
-    float totalPreviousEnergy = 0.0f, totalCurrentEnergy = 0.0f;
-    float totalPreviousSleep = 0.0f,  totalCurrentSleep = 0.0f;
-    
-    // Sum up the current week
-    for (const auto &point : current) {
-        totalCurrentStress += point.rollingStress;
-        totalCurrentEnergy += point.rollingEnergy;
-        totalCurrentSleep  += point.rollingSleep;
+    // GUARD: If we don't have at least two points, we can't calculate a change.
+    // This prevents the app from crashing if the user has a brand new account.
+    if (points.size() < 2) {
+        return {0.0f, 0.0f, 0.0f};
     }
-    
-    // Sum up the previous week
-    for (const auto &point : previous) {
-        totalPreviousStress += point.rollingStress;
-        totalPreviousEnergy += point.rollingEnergy;
-        totalPreviousSleep  += point.rollingSleep;
+
+    // Since the SQL calculates rolling averages for every row:
+    // points.front() = The most recent 7-day rolling average
+    // points.back()  = The oldest 7-day rolling average in the window
+    const auto& current = points.front();
+    const auto& past    = points.back();
+
+    float stressChange = 0.0f;
+    float energyChange = 0.0f;
+    float sleepChange  = 0.0f;
+
+    // Formula: ((Current - Past) / Past) * 100
+
+    // 1. Stress Momentum
+    if (past.rollingStress > 0) {
+        stressChange = ((current.rollingStress - past.rollingStress) / past.rollingStress) * 100.0f;
     }
-    
-    float stressChange = 0.0f, energyChange = 0.0f, sleepChange = 0.0f;
-    
-    if (totalPreviousStress > 0) {
-        stressChange = ((totalCurrentStress - totalPreviousStress) / totalPreviousStress) * 100.0f;
+
+    // 2. Energy Momentum
+    if (past.rollingEnergy > 0) {
+        energyChange = ((current.rollingEnergy - past.rollingEnergy) / past.rollingEnergy) * 100.0f;
     }
-    if (totalPreviousEnergy > 0) {
-        energyChange = ((totalCurrentEnergy - totalPreviousEnergy) / totalPreviousEnergy) * 100.0f;
+
+    // 3. Sleep Momentum
+    if (past.rollingSleep > 0) {
+        sleepChange = ((current.rollingSleep - past.rollingSleep) / past.rollingSleep) * 100.0f;
     }
-    if (totalPreviousSleep > 0) {
-        sleepChange = ((totalCurrentSleep - totalPreviousSleep) / totalPreviousSleep) * 100.0f;
-    }
-    
-    // 4. Return the full Triad Analysis
+
     return {stressChange, energyChange, sleepChange};
 }
-
-// helper function to help calculate the global baseline feature
 
 float AnalyticsEngine::calculateGlobalBaseline(const std::vector<MoodEntry>& entries) {
     if (entries.empty()) return 0.0f;
@@ -147,7 +139,7 @@ std::vector<AnalyticsEngine::TriggerAnalysis> AnalyticsEngine::getTriggerInsight
     
     // 1. GLOBAL BASELINES (The Relational Context)
     // We calculate these once so we can compare every trigger against them.
-    float globalEnergy = calculateGlobalBaseline(entries);
+    float globalEnergy = getAverageEnergy(entries);
     float globalSleep = getAverageSleep(entries);
     
     std::map<std::string, std::vector<MoodEntry>> triggerGroups;
@@ -172,7 +164,7 @@ std::vector<AnalyticsEngine::TriggerAnalysis> AnalyticsEngine::getTriggerInsight
         insight.globalEnergy = globalEnergy;
         insight.globalSleep = globalSleep;
         
-        // Calculate the Impact or Delta
+        // Calculate the Delta
         float energyImpact = insight.avgEnergy - globalEnergy;
         
         if (insight.frequency >= 3) { // 3+ is required to notice a trend
@@ -183,15 +175,15 @@ std::vector<AnalyticsEngine::TriggerAnalysis> AnalyticsEngine::getTriggerInsight
             }
             
             if (energyImpact <= -1.0f && insight.avgStress >= 3.5f) {
-                insight.diagnosis = "HIGH STRAIN";
+                insight.diagnosis = "CRITICAL STRAIN";
                 insight.advice = "This activity consistently drains your energy during high-stress periods. Try pairing it with recovery time afterward.";
             }
             else if (energyImpact >= 1.0f) {
-                insight.diagnosis = "POSITIVE RECOVERY";
+                insight.diagnosis = "HIGH EFFICIENCY";
                 insight.advice = "This activity appears to improve your energy and overall balance. Consider making it part of your regular routine.";
             }
             else if (energyImpact <= -0.8f) {
-                insight.diagnosis = "ENERGY DRAIN";
+                insight.diagnosis = "PARASITIC DRAIN";
                 
                 if (sleepDiff <= -10.0f) {
                     insight.advice = "Poor sleep may be amplifying the impact of this activity. Prioritize recovery when possible.";

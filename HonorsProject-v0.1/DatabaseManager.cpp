@@ -125,8 +125,7 @@ std::vector<MomentumPoint> DatabaseManager::getMoodMomentum() {
         "AVG(energy_level) OVER (ORDER BY created_at ROWS BETWEEN 6 PRECEDING AND CURRENT ROW), "
         "AVG(sleep_hours) OVER (ORDER BY created_at ROWS BETWEEN 6 PRECEDING AND CURRENT ROW) "
         "FROM mood_entry "
-        "ORDER BY created_at DESC "
-        "LIMIT 14;";
+        "WHERE created_at >= date('now', '-14 days') ORDER BY created_at DESC;";
 
     sqlite3_stmt* stmt;
 

@@ -9,7 +9,7 @@ protected:
 public:
     Report(std::string t) : title(t) {}
 
-    // virtual allows classes are allowed to replace this function with their own version[note]
+    // virtual allows classes to replace this function with their own version[note]
     virtual ~Report() {}
     virtual void generate() = 0;
 
