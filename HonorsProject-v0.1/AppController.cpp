@@ -315,86 +315,65 @@ void AppController::onViewCorrelationReport() {
     std::vector<MoodEntry> entries = db.getEntries(0);
     auto metrics = analytics.correlationLink(entries);
 
-    std::string energySleepReport =
-        analytics.getInsight(metrics.energySleep, "Energy", "Sleep");
-
     // UI Header
     std::cout << "\n================================================\n";
     std::cout << "             Behavior Pattern Report             \n";
     std::cout << "================================================\n";
-    std::cout << "ANALYZING RELATIONSHIPS IN YOUR DATA...\n\n";
-
-    // Table header
+    
+    // 1. DATA TABLE
     std::cout << std::left << std::setw(colL) << "[ Relationship ]"
               << std::setw(colI) << "[ Correlation ]"
               << "[ TYPE ]\n";
-
     std::cout << "------------------------------------------------\n";
 
-    // Rows
-    std::cout << std::left << std::setw(colL) << "Sleep -> Energy"
-              << "|    " << std::setw(8) << std::fixed<< std::setprecision(2) << metrics.energySleep
-              << "|  " << getTypeLabel(metrics.energySleep) << "\n";
+    auto printRow = [&](std::string label, double val) {
+        std::cout << std::left << std::setw(colL) << label
+                  << "|    " << std::setw(8) << std::fixed << std::setprecision(2) << val
+                  << "|  " << getTypeLabel(val) << "\n";
+    };
 
-    std::cout << std::left << std::setw(colL) << "Stress -> Energy"
-              << "|    " << std::setw(8) << std::fixed<< std::setprecision(2) << metrics.energyStress
-              << "|  " << getTypeLabel(metrics.energyStress) << "\n";
+    printRow("Sleep -> Energy", metrics.energySleep);
+    printRow("Stress -> Energy", metrics.energyStress);
+    printRow("Sleep -> Stress", metrics.sleepStress);
+    std::cout << "================================================\n";
 
-    std::cout << std::left << std::setw(colL) << "Sleep -> Stress"
-              << "|    " << std::setw(8) << std::fixed<< std::setprecision(2) << metrics.sleepStress
-              << "|  " << getTypeLabel(metrics.sleepStress) << "\n";
-
-    std::cout << "================================================\n\n";
-
-    // Find strongest relationship
+    // 2. PRIMARY DRIVER (Consolidated Result & Detailed Analysis)
     double strongestR = metrics.energySleep;
-    std::string var1 = "Energy";
-    std::string var2 = "Sleep";
+    std::string varA = "Energy", varB = "Sleep";
 
     if (std::abs(metrics.energyStress) > std::abs(strongestR)) {
-        strongestR = metrics.energyStress;
-        var1 = "Energy";
-        var2 = "Stress";
+        strongestR = metrics.energyStress; varA = "Energy"; varB = "Stress";
     }
-
     if (std::abs(metrics.sleepStress) > std::abs(strongestR)) {
-        strongestR = metrics.sleepStress;
-        var1 = "Sleep";
-        var2 = "Stress";
+        strongestR = metrics.sleepStress; varA = "Sleep"; varB = "Stress";
     }
 
-    std::cout << "KEY INSIGHT:\n";
-    std::cout << "The strongest relationship in your data is between "
-              << var1 << " and " << var2 << ".\n";
+    std::cout << "Primary System Driver\n";
+    std::cout << "The strongest link is " << varA << " <-> " << varB << " (r = " << std::abs(strongestR) << ").\n";
+    std::cout << "Impact: " << (strongestR > 0 ? "Positive Correlation. These metrics move together."
+                                                : "Inverse Relationship. These metrics move in opposite directions.") << "\n";
 
-    std::cout << "This suggests that changes in "
-              << var1 << " tend to influence "
-              << var2 << " over time in a consistent pattern.\n\n";
-
-    std::cout << "DETAILED ANALYSIS:\n";
-    std::cout << analytics.getInsight(strongestR, var1, var2) << "\n";
-
-    // --- MECHANICAL IMPACT ANALYSIS --- [Here we use the slope to identify the change that stress has to energy]
     std::cout << "------------------------------------------------\n";
-    std::cout << "MECHANICAL IMPACT (System Sensitivity):\n";
+    std::cout << "MODEL INSIGHTS (Linear Regression):\n";
 
-    // We use the absolute value because the 'cost' is the magnitude of the drop
-    double impactRate = std::abs(metrics.sensitivity);
+    std::cout << " - Stress Impact: "
+              << "Each +1 stress point is associated with a "
+              << std::abs(metrics.stressSensitivity)
+              << " decrease in predicted energy.\n";
 
-    std::cout << "The engine identifies a 'Stress-to-Energy Exchange Rate' of "
-              << std::fixed << std::setprecision(2) << impactRate << ".\n";
+    std::cout << " - Sleep Impact: "
+              << "Each +1 hour of sleep is associated with a "
+              << metrics.sleepEfficiency
+              << " increase in predicted energy.\n";
 
-    std::cout << "In practice: For every 1.0 point of Stress added to your system,\n";
-    std::cout << "you lose exactly " << impactRate << " points of Energy.\n";
-    
-    std::cout << "------------------------------------------------\n";
-
-    if (impactRate > 1.0) {
-        std::cout << "STATUS: High Sensitivity. Stress has an outsized impact on your battery.\n";
-    } else {
-        std::cout << "STATUS: High Resilience. Your system handles stress loads efficiently.\n";
-    }
-    std::cout << "------------------------------------------------\n";
+//    // Dynamic Status Logic
+//    std::cout << "\nSTATUS: ";
+//    if (std::abs(metrics.stressSensitivity) > metrics.sleepEfficiency) {
+//        std::cout << "High Fragility. Stress drain outpaces sleep recovery.\n";
+//    } else {
+//        std::cout << "High Resilience. Sleep recovery efficiently offsets stress.\n";
+//    }
+//    std::cout << "------------------------------------------------\n";
     
     printCorrelationLegend();
 }
@@ -437,7 +416,7 @@ void AppController::printSensitivityBlock(double sensitivity) {
     std::string verb = (sensitivity < 0) ? "drops" : "increases";
     
     // 3. The Modular Output
-    std::cout << "SYSTEM SENSITIVITY: \n";
+    std::cout << "Exchange Cost: \n";
     std::cout << level << " sensitivity to Load spikes. For every \n";
     std::cout << "1.0 point of Stress added, your Energy \n";
     std::cout << verb << " by approximately " << std::fixed << std::setprecision(1) << absSens << " points.\n";

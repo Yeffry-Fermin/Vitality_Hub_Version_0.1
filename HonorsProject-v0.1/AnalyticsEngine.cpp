@@ -39,6 +39,7 @@ float AnalyticsEngine::getAverageSleep(const std::vector<MoodEntry>& entries) co
     return totalSleep / entries.size();
 }
 
+//Takes stress, energy and sleep, calculates a gap and uses all 3 variables to come up with messages
 std::string AnalyticsEngine::getVitalityAdvice(double stress, double energy, double sleep) const {
     // Difference between stress and energy
     // Positive = stress is higher than energy
@@ -90,7 +91,7 @@ std::string AnalyticsEngine::getVitalityAdvice(double stress, double energy, dou
 
 
 AnalyticsEngine::MoodAnalysis AnalyticsEngine::periodComparison(const std::vector<MomentumPoint> &points) {
-    // GUARD: If we don't have at least two points, we can't calculate a change.
+    // If we don't have at least two points, we can't calculate a change.
     // This prevents the app from crashing if the user has a brand new account.
     if (points.size() < 2) {
         return {0.0f, 0.0f, 0.0f};
@@ -106,7 +107,7 @@ AnalyticsEngine::MoodAnalysis AnalyticsEngine::periodComparison(const std::vecto
     float energyChange = 0.0f;
     float sleepChange  = 0.0f;
 
-    // Formula: ((Current - Past) / Past) * 100
+    // Formula for percent change ((Current - Past) / Past) * 100
 
     // 1. Stress Momentum
     if (past.rollingStress > 0) {
@@ -132,7 +133,7 @@ float AnalyticsEngine::calculateGlobalBaseline(const std::vector<MoodEntry>& ent
     return getAverageEnergy(entries);
 }
 
-// This function takes a list of daily mood entries and figures out which 'trigger' shows up most often.
+// This function takes a list of daily mood entries and figures out which 'trigger' shows up most often then
 std::vector<AnalyticsEngine::TriggerAnalysis> AnalyticsEngine::getTriggerInsights(const std::vector<MoodEntry> &entries) {
     std::vector<TriggerAnalysis> insights;
     if (entries.empty()) return insights;
@@ -149,7 +150,7 @@ std::vector<AnalyticsEngine::TriggerAnalysis> AnalyticsEngine::getTriggerInsight
         }
     }
     
-    // 3. ANALYSIS LOOP
+    // Loop throuhg the map key: value pairs
     for (auto const& [name, subset] : triggerGroups) {
         TriggerAnalysis insight;
         insight.trigger = name;
@@ -167,39 +168,93 @@ std::vector<AnalyticsEngine::TriggerAnalysis> AnalyticsEngine::getTriggerInsight
         // Calculate the Delta
         float energyImpact = insight.avgEnergy - globalEnergy;
         
-        if (insight.frequency >= 3) { // 3+ is required to notice a trend
+        // 3+ is required to notice a trend
+        // Only analyze patterns that appear frequently enough
+        // This prevents unreliable conclusions from tiny sample sizes
+        if (insight.frequency >= 3) {
 
+            // Measures how much sleep differs from the user's overall baseline
+            // Stored as a percentage difference
             float sleepDiff = 0.0f;
+
+            // Prevent division by zero before calculating percentage change
             if (globalSleep > 0) {
+
+                // Formula:
+                // ((current average - baseline average) / baseline average) * 100
+                //
+                // Positive result  -> more sleep than normal
+                // Negative result  -> less sleep than normal
                 sleepDiff = ((insight.avgSleep - globalSleep) / globalSleep) * 100.0f;
             }
-            
+
+            // PATTERN CLASSIFICATION SYSTEM
+            // Case 1:
+            // Strong negative energy impact combined with high stress
+            // Indicates the activity is likely overwhelming or exhausting
             if (energyImpact <= -1.0f && insight.avgStress >= 3.5f) {
+
                 insight.diagnosis = "CRITICAL STRAIN";
-                insight.advice = "This activity consistently drains your energy during high-stress periods. Try pairing it with recovery time afterward.";
+
+                insight.advice =
+                    "This activity consistently drains your energy during high-stress periods. "
+                    "Try pairing it with recovery time afterward.";
             }
+
+            // Case 2:
+            // Positive energy impact
+            // Suggests the activity benefits energy and stability
             else if (energyImpact >= 1.0f) {
+
                 insight.diagnosis = "HIGH EFFICIENCY";
-                insight.advice = "This activity appears to improve your energy and overall balance. Consider making it part of your regular routine.";
+
+                insight.advice =
+                    "This activity appears to improve your energy and overall balance. "
+                    "Consider making it part of your regular routine.";
             }
+
+            // Case 3:
+            // Moderate negative energy impact
+            // Activity may contribute to fatigue over time
             else if (energyImpact <= -0.8f) {
+
                 insight.diagnosis = "PARASITIC DRAIN";
-                
+
+                // If sleep is also significantly below baseline,
+                // sleep deprivation may be worsening the problem
                 if (sleepDiff <= -10.0f) {
-                    insight.advice = "Poor sleep may be amplifying the impact of this activity. Prioritize recovery when possible.";
-                } else {
-                    insight.advice = "This activity may be contributing to fatigue over time. Monitor how often it appears during stressful periods.";
+
+                    insight.advice =
+                        "Poor sleep may be amplifying the impact of this activity. "
+                        "Prioritize recovery when possible.";
+                }
+                else {
+
+                    insight.advice =
+                        "This activity may be contributing to fatigue over time. "
+                        "Monitor how often it appears during stressful periods.";
                 }
             }
+
+            // Case 4:
+            // No major positive or negative impact detected
             else {
+
                 insight.diagnosis = "STABLE PATTERN";
-                insight.advice = "This activity appears relatively balanced and manageable within your current routine.";
+
+                insight.advice =
+                    "This activity appears relatively balanced and manageable "
+                    "within your current routine.";
             }
-            }
-            else {
-                insight.diagnosis = "INSUFFICIENT DATA";
-                insight.advice = "Log this activity a few more times to generate more accurate insights.";
-            }
+        }
+        else {
+
+            // Not enough observations to produce reliable analytics
+            insight.diagnosis = "INSUFFICIENT DATA";
+
+            insight.advice =
+                "Log this activity a few more times to generate more accurate insights.";
+        }
         
         insights.push_back(insight);
     }
@@ -207,48 +262,125 @@ std::vector<AnalyticsEngine::TriggerAnalysis> AnalyticsEngine::getTriggerInsight
     return insights;
 }
 
-AnalyticsEngine::CorrelationMetrics AnalyticsEngine::correlationLink(const std::vector<MoodEntry> &entries) {
+AnalyticsEngine::CorrelationMetrics AnalyticsEngine::correlationLink(
+    const std::vector<MoodEntry> &entries) {
+
+    // Arrays used by ALGLIB for statistical calculations
+    // Each array stores one variable across all mood entries
     alglib::real_1d_array energyPile;
     alglib::real_1d_array sleepPile;
     alglib::real_1d_array stressPile;
-    
-    // Piles are passed by ref so we avoid making copies, now the functions above are gud
+
+    // EXTRACT DATA FROM ENTRIES
+    // Convert MoodEntry objects into raw numerical arrays
+    // so ALGLIB can process them statistically
+
     extractCorrelationData(entries, energyPile, Mode::ENERGY);
     extractCorrelationData(entries, sleepPile, Mode::SLEEP);
     extractCorrelationData(entries, stressPile, Mode::STRESS);
-    
-    // "pearson correlation formula" - formula measures the strength and direction of a linear relationship between two variables,
-    // ranging from -1 to +1.
+
+    // PEARSON CORRELATION ANALYSIS
+    // Pearson correlation measures how strongly two variables
+    // move together on a scale from -1 to +1
+    //
+    // +1  -> strong positive relationship
+    //  0  -> no relationship
+    // -1  -> strong negative relationship
+
     double energySleepCorr = alglib::pearsoncorrelation(energyPile, sleepPile, entries.size());
+
     double energyStressCorr = alglib::pearsoncorrelation(energyPile, stressPile, entries.size());
+
     double sleepStressCorr = alglib::pearsoncorrelation(sleepPile, stressPile, entries.size());
-    
-    
+
+    // MULTIPLE LINEAR REGRESSION
+    // Goal:
+    // Predict ENERGY using:
+    //   - Stress
+    //   - Sleep
+    // Regression equation:
+    // Energy =
+    //   (stressSensitivity * Stress)
+    // + (sleepEfficiency * Sleep)
+    // + baseline
+
+    // Regression matrix:
+    // Column 0 -> Stress values
+    // Column 1 -> Sleep values
+    // Column 2 -> Constant intercept term (1.0)
+    // Rows represent individual mood entries
+
     alglib::real_2d_array matrix;
-    matrix.setlength((alglib::ae_int_t)entries.size(), 2);
-    
-    for (int i = 0; i < entries.size(); i++) {
+    matrix.setlength((alglib::ae_int_t)entries.size(), 3);
+
+    for (int i = 0; i < (int)entries.size(); i++) {
+
+        // Predictor Variable #1
         matrix[i][0] = entries[i].getStressLevel();
-        matrix[i][1] = 1.0;
+        // Predictor Variable #2
+        matrix[i][1] = entries[i].getSleepHours();
+        // Constant intercept column
+        matrix[i][2] = 1.0;
     }
-    
+
+    // Stores resulting regression coefficients
     alglib::real_1d_array c;
+
+    // Diagnostic report returned by ALGLIB
     alglib::lsfitreport rep;
-    alglib::lsfitlinear(energyPile, matrix, (alglib::ae_int_t)entries.size(), 2, c, rep);
-    
-    double sensitivity = 0;
+
+    // ------------------------------------------------------------
+    // RUN LINEAR REGRESSION
+    // ------------------------------------------------------------
+    // ALGLIB solves for the coefficients that best fit:
+    //
+    // Energy =
+    //   a(Stress)
+    // + b(Sleep)
+    // + c
+    //
+    // where:
+    //   a = stressSensitivity
+    //   b = sleepEfficiency
+    //   c = baseline/intercept
+
+    alglib::lsfitlinear(
+        energyPile,
+        matrix,
+        (alglib::ae_int_t)entries.size(),
+        3,
+        c,
+        rep);
+
+    // Default fallback values
+    double stressSensitivity = 0;
+    double sleepEfficiency = 0;
     double baseline = 0;
-    
+
+    // Positive termination type means regression succeeded
     if (rep.terminationtype > 0) {
-        sensitivity = c[0]; // (Slope)
-        baseline = c[1];    // (Intercept)
+
+        // Regression coefficient for stress
+        // Negative value:
+        //   stress tends to reduce energy
+        stressSensitivity = c[0];
+
+        // Regression coefficient for sleep
+        // Positive value:
+        //   sleep tends to improve energy
+        sleepEfficiency = c[1];
+
+        // Baseline energy level when predictors are neutral
+        baseline = c[2];
     }
-    
+
+    // Return all calculated analytics
     return {
         energySleepCorr,
         energyStressCorr,
         sleepStressCorr,
-        sensitivity,
+        stressSensitivity,
+        sleepEfficiency,
         baseline
     };
 }
@@ -268,6 +400,7 @@ void AnalyticsEngine::extractCorrelationData(const std::vector<MoodEntry> &entri
                 break;
             case Mode::STRESS:
                 outPile[i] = entries[i].getStressLevel();
+                break;
             default:
                 break;
         }

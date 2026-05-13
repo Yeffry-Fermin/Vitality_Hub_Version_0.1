@@ -37,7 +37,8 @@ public:
         double energySleep;
         double energyStress;
         double sleepStress;
-        double sensitivity;
+        double stressSensitivity;
+        double sleepEfficiency;
         double baseline;
     };
     float getAverageStress(const std::vector<MoodEntry>& entries) const;
