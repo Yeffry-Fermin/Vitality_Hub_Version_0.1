@@ -100,21 +100,19 @@ Instead of treating mood as abstract or emotional noise, the system:
 
 ## Build & Run
 
-1. Clone the repository
-   git clone https://github.com/Yeffry-Fermin/Vitality_Hub_Version_0.1
+1. Download your own .zip file from Google Drive to a completely new location (like your Downloads folder).  
+2. Open Terminal.
+3. Type cd and drag this folder into the Terminal, it should look something like this(note its cd then space then the path) 
+   Eg. username@Mac ~ % cd /Users/username/Downloads/VitalitySystem_v1 
+4. Run this command to unlock the app: chmod +x ./VitalityPF (then hit Enter)
+5. Try running it.
+6. IF MALWARE NOTIFICATION SHOWS UP(THANKS APPLE) DO THE FOLLOWING
+   a) Go to your System Settings > Privacy & Security.
+   b) Scroll down to the bottom and you will see Vitality PF, click "Open Anyway."
+   c) Try Opening again. 
 
-2. Enter project directory
-   cd Vitality_Hub_Version_0.1
 
-3. Build the project
 
-   Using CMake:
-   mkdir build
-   cd build
-   cmake ..
-   cmake --build .
 
-4. Run the application
-   ./VitalityHub   (or the generated executable)
 make
 ./VitalityHub
