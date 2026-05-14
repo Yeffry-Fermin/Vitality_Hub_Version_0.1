@@ -26,6 +26,8 @@ void showLoadingAppend(int load) {
     std::cout << std::endl;
 }
 
+// MENU WILL BE REFACTORED IN A FUTURE VERSION
+
 int main() {
     DatabaseManager globalDb;
     AnalyticsEngine analytics;
