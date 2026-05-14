@@ -356,15 +356,33 @@ void AppController::onViewCorrelationReport() {
     std::cout << "------------------------------------------------\n";
     std::cout << "MODEL INSIGHTS (Linear Regression):\n";
 
+
+    std::cout << std::fixed << std::setprecision(1);
+
+    double stressCoef = metrics.stressSensitivity;
+    double sleepCoef = metrics.sleepEfficiency;
+
+    // Stress output
     std::cout << " - Stress Impact: "
               << "Each +1 stress point is associated with a "
-              << std::abs(metrics.stressSensitivity)
-              << " decrease in predicted energy.\n";
+              << std::abs(stressCoef) / 4.0 * 100
+              << "% ";
 
+    if (stressCoef < 0)
+        std::cout << "decrease in energy.\n";
+    else
+        std::cout << "increase in energy.\n";
+
+    // Sleep output
     std::cout << " - Sleep Impact: "
               << "Each +1 hour of sleep is associated with a "
-              << metrics.sleepEfficiency
-              << " increase in predicted energy.\n";
+              << (sleepCoef / 4.0) * 100
+              << "% ";
+
+    if (sleepCoef < 0)
+        std::cout << "decrease in energy.\n";
+    else
+        std::cout << "increase in energy.\n";
 
 //    // Dynamic Status Logic
 //    std::cout << "\nSTATUS: ";
