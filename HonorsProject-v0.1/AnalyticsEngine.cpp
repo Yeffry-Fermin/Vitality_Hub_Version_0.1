@@ -167,10 +167,17 @@ std::vector<AnalyticsEngine::TriggerAnalysis> AnalyticsEngine::getTriggerInsight
         
         // Calculate the Delta
         float energyImpact = insight.avgEnergy - globalEnergy;
+                
+        /* * PATTERN ANALYSIS LEGEND (Based on 1-5 Scale: 1.0 Point = 20% Shift)
+         * -----------------------------------------------------------------
+         * Frequency >= 3: Minimum observations required to establish a trend.
+         * Energy Delta >= 1.0: "High Efficiency" - Activity boosts battery by 20%+.
+         * Energy Delta <= -1.0: "Critical Strain" - Activity drains battery by 20%+.
+         * Energy Delta <= -0.8: "Parasitic Drain" - Significant drain (approx 16%).
+         * Stress Avg >= 3.5: "High Load" - The threshold where load becomes overwhelming.
+         * Sleep Diff <= -10%: "Significance Floor" - Minimal drop to trigger sleep-debt alerts.
+         */
         
-        // 3+ is required to notice a trend
-        // Only analyze patterns that appear frequently enough
-        // This prevents unreliable conclusions from tiny sample sizes
         if (insight.frequency >= 3) {
 
             // Measures how much sleep differs from the user's overall baseline
@@ -180,17 +187,14 @@ std::vector<AnalyticsEngine::TriggerAnalysis> AnalyticsEngine::getTriggerInsight
             // Prevent division by zero before calculating percentage change
             if (globalSleep > 0) {
 
-                // Formula:
-                // ((current average - baseline average) / baseline average) * 100
-                //
+                // Formula: ((current average - baseline average) / baseline average) * 100
                 // Positive result  -> more sleep than normal
                 // Negative result  -> less sleep than normal
                 sleepDiff = ((insight.avgSleep - globalSleep) / globalSleep) * 100.0f;
             }
 
             // PATTERN CLASSIFICATION SYSTEM
-            // Case 1:
-            // Strong negative energy impact combined with high stress
+            // Case 1: Strong negative energy impact combined with high stress
             // Indicates the activity is likely overwhelming or exhausting
             if (energyImpact <= -1.0f && insight.avgStress >= 3.5f) {
 
@@ -299,10 +303,7 @@ AnalyticsEngine::CorrelationMetrics AnalyticsEngine::correlationLink(
     //   - Stress
     //   - Sleep
     // Regression equation:
-    // Energy =
-    //   (stressSensitivity * Stress)
-    // + (sleepEfficiency * Sleep)
-    // + baseline
+    // Energy = (stressSensitivity * Stress) + (sleepEfficiency * Sleep) + baseline
 
     // Regression matrix:
     // Column 0 -> Stress values
@@ -344,13 +345,7 @@ AnalyticsEngine::CorrelationMetrics AnalyticsEngine::correlationLink(
     //   b = sleepEfficiency
     //   c = baseline/intercept
 
-    alglib::lsfitlinear(
-        energyPile,
-        matrix,
-        (alglib::ae_int_t)entries.size(),
-        3,
-        c,
-        rep);
+    alglib::lsfitlinear(energyPile,matrix,(alglib::ae_int_t)entries.size(),3,c,rep);
 
     // Default fallback values
     double stressSensitivity = 0;
@@ -361,15 +356,11 @@ AnalyticsEngine::CorrelationMetrics AnalyticsEngine::correlationLink(
     if (rep.terminationtype > 0) {
 
         // Regression coefficient for stress
-        // Negative value:
-        //   stress tends to reduce energy
+        // Negative value: stress tends to reduce energy
         stressSensitivity = c[0];
-
         // Regression coefficient for sleep
-        // Positive value:
-        //   sleep tends to improve energy
+        // Positive value: sleep tends to improve energy
         sleepEfficiency = c[1];
-
         // Baseline energy level when predictors are neutral
         baseline = c[2];
     }

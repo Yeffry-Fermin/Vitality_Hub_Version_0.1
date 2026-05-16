@@ -57,7 +57,7 @@ void AppController::onAddMoodEntry() {
         std::cout << "Log successful. Vitality data synchronized.\n";
     }
     catch (const std::exception& e) {
-        std::cerr << "Error: " << e.what() << std::endl;
+        std::cerr << "Error: " << e.what() << std::endl; // what() essentially asks "what err happened?"
         std::cout << "Failed to save entry. Please try again.\n";
     }
     
@@ -172,15 +172,22 @@ void AppController::onMostFrequentTrigger(int option) {
 
     std::cout << "ANALYSIS: ";
 
+    // 1. Safety check: prevents a "Division by Zero" crash if no baseline exists
     if (top.globalSleep > 0) {
+
+        // 2. Relative change: Calculates how much this trigger's sleep deviates from the norm
+        // later on we can incorporate energy and stress here for now chill
         float sleepDiff = ((top.avgSleep - top.globalSleep) / top.globalSleep) * 100.0f;
 
+        // 3. Significance Threshold: Flags the result only if sleep is at least 10% lower than usual
+        // why? because less than 10% could just be outliers
         if (sleepDiff <= -10.0f) {
             std::cout << "Your sleep is "
                       << std::abs(sleepDiff)
                       << "% below your baseline. "
                       << "This may be increasing fatigue during this activity.\n";
         } else {
+            // 4. Differential Diagnosis: If sleep is within 10%, blame the activity itself for the fatigue
             std::cout << "Sleep levels are stable. "
                       << "The stress impact appears more activity-related.\n";
         }
@@ -200,8 +207,6 @@ void AppController::onMostFrequentTrigger(int option) {
 //        std::cout << "NEUTRAL IMPACT: Your battery levels remain stable during this activity.\n";
 //    }
     
-    
-
     std::cout << "\nDIAGNOSIS: " << top.diagnosis << "\n";
     std::cout << "ACTION: " << top.advice << "\n";
 
