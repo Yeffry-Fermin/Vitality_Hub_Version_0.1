@@ -99,6 +99,9 @@ Instead of treating mood as abstract or emotional noise, the system:
 ---
 
 ## Build & Run
+https://drive.google.com/drive/folders/1UAcX7gNLYR6_BRLjxWXVZ0XXvxGaCnPI?dmr=1&ec=wgc-drive-%5Bmodule%5D-goto
+
+MAC Instructions
 
 1. Download your own .zip file from Google Drive to a completely new location (like your Downloads folder).  
 2. Open Terminal.
@@ -110,6 +113,9 @@ Instead of treating mood as abstract or emotional noise, the system:
    a) Go to your System Settings > Privacy & Security.
    b) Scroll down to the bottom and you will see Vitality PF, click "Open Anyway."
    c) Try Opening again. 
+
+Windows Instructions
+1.Download the windows zip version and run the app. 
 
 
 
